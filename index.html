@@ -316,7 +316,7 @@
                 </div>
               </div>
 
-              <!-- E-Commerce Sync Terminal Simulator -->
+              <!-- E-Commerce Sync Visual Pipeline & Terminal Simulator -->
               <div class="ecommerce-sync-sandbox">
                 <div class="ecommerce-control-bar">
                   <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -325,6 +325,34 @@
                   </div>
                   <button class="sandbox-btn" id="btn-simulate-checkout" style="margin-left: auto;"><i class="fa-solid fa-bag-shopping"></i> Trigger Online Checkout</button>
                 </div>
+                
+                <!-- Visual Pipeline Progress Steps -->
+                <div class="sync-pipeline" id="sync-pipeline-container">
+                  <div class="sync-step" id="sync-step-1">
+                    <div class="sync-step-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                    <div class="sync-step-label">1. Online Checkout</div>
+                    <div class="sync-step-desc">Order placed on web store</div>
+                  </div>
+                  <div class="sync-step-line"></div>
+                  <div class="sync-step" id="sync-step-2">
+                    <div class="sync-step-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                    <div class="sync-step-label">2. Stock Check</div>
+                    <div class="sync-step-desc">Confirm availability in WMS</div>
+                  </div>
+                  <div class="sync-step-line"></div>
+                  <div class="sync-step" id="sync-step-3">
+                    <div class="sync-step-icon"><i class="fa-solid fa-credit-card"></i></div>
+                    <div class="sync-step-label">3. Payment & Ledger</div>
+                    <div class="sync-step-desc">Invoice paid & stock deducted</div>
+                  </div>
+                  <div class="sync-step-line"></div>
+                  <div class="sync-step" id="sync-step-4">
+                    <div class="sync-step-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                    <div class="sync-step-label">4. Shipping dispatch</div>
+                    <div class="sync-step-desc">SCM logistics tags generated</div>
+                  </div>
+                </div>
+
                 <div class="terminal-console" id="ecommerce-terminal">
 [SYSTEM IDLE] Awaiting webstore purchase webhook trigger... Click "Trigger Online Checkout" to execute.
                 </div>

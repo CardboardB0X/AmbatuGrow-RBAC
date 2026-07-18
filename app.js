@@ -839,39 +839,86 @@ function initECommerceSimulator() {
   if (!triggerBtn || !consoleEl) return;
 
   const logLines = [
-    { text: "[15:40:02] HTTP POST webhook received from storefront: /api/webhooks/order-completed", delay: 100 },
-    { text: "[15:40:03] Parsing checkout JSON payload context...", delay: 600 },
-    { text: "{\n  \"event\": \"checkout.completed\",\n  \"customer\": { \"id\": 8, \"email\": \"jane.doe@cvsu.edu.ph\" },\n  \"items\": [ { \"product_id\": 12, \"sku\": \"SKU-MINT-88\", \"qty\": 2 } ]\n}", delay: 1200, isJson: true },
-    { text: "[15:40:04] Fetching product and category configuration details...", delay: 2000 },
-    { text: "SQL: SELECT product_id, sku, base_price FROM Products WHERE product_id = 12;", delay: 2300, isSql: true },
-    { text: "[15:40:04] Inserting new E-Commerce Sales Order row...", delay: 2900 },
-    { text: "SQL: INSERT INTO Sales_Orders (customer_id, status) VALUES (8, 'Pending');", delay: 3200, isSql: true },
-    { text: "[15:40:05] Querying warehouse stock levels inside WMS...", delay: 3800 },
-    { text: "SQL: SELECT quantity FROM Inventory_Locations WHERE product_id = 12 AND warehouse_id = 1;", delay: 4100, isSql: true },
-    { text: "[15:40:06] Stock verified (quantity: 8 >= order_qty: 2). Allocating inventory...", delay: 4800 },
-    { text: "SQL: UPDATE Inventory_Locations SET quantity = quantity - 2 WHERE product_id = 12 AND warehouse_id = 1;\nSQL: INSERT INTO Stock_Transactions (product_id, transaction_type, quantity) VALUES (12, 'Stock-out', 2);", delay: 5300, isSql: true },
-    { text: "[15:40:07] Scheduling outbound logistics transit shipment details...", delay: 6000 },
-    { text: "SQL: INSERT INTO Shipments (reference_type, reference_id, status) VALUES ('Outbound', 84, 'Pending');", delay: 6400, isSql: true },
-    { text: "[15:40:07] Webhook processed successfully. HTTP 200 OK returned.", delay: 7000 }
+    { text: "[15:40:02] Storefront System: Customer Jane Doe has completed checkout for 2 units of SKU-MINT-88.", delay: 100 },
+    { text: "✓ Storefront API: Webhook received. Processing order details...", delay: 600 },
+    { text: "[15:40:03] WMS System: Checking inventory availability in primary warehouse location...", delay: 1500 },
+    { text: "✓ WMS Database: Stock verified. (Quantity: 8 available >= 2 requested).", delay: 2200 },
+    { text: "[15:40:04] Payment System: Reconciling customer invoice via payment gateway...", delay: 3200 },
+    { text: "✓ Billing API: Payment of 900.00 PHP confirmed. Invoice status marked as PAID.", delay: 3800 },
+    { text: "[15:40:05] WMS System: Reserving SKU-MINT-88 and reducing stock level by 2. New stock: 6.", delay: 4800 },
+    { text: "[15:40:06] Supply Chain System: Handing package over to J&T Express carrier and creating tracking tag...", delay: 5800 },
+    { text: "✓ SCM Logistics: Outbound delivery tracking ID generated: JNT-SCM-88204.", delay: 6500 },
+    { text: "[15:40:07] Storefront API: Callback sync complete. Multi-channel stock synchronized. Sync complete!", delay: 7000 }
   ];
 
   triggerBtn.addEventListener('click', () => {
     triggerBtn.disabled = true;
     consoleEl.innerHTML = '';
     
+    const step1 = document.getElementById('sync-step-1');
+    const step2 = document.getElementById('sync-step-2');
+    const step3 = document.getElementById('sync-step-3');
+    const step4 = document.getElementById('sync-step-4');
+    const lines = document.querySelectorAll('.sync-step-line');
+    
+    // Reset steps
+    [step1, step2, step3, step4].forEach(s => {
+      if (s) {
+        s.classList.remove('active');
+        s.classList.remove('completed');
+      }
+    });
+    lines.forEach(l => l.classList.remove('completed'));
+
+    // Step 1 Active
+    if (step1) step1.classList.add('active');
+
+    // Timer triggers for visual step advances
+    setTimeout(() => {
+      if (step1) {
+        step1.classList.remove('active');
+        step1.classList.add('completed');
+      }
+      if (lines[0]) lines[0].classList.add('completed');
+      if (step2) step2.classList.add('active');
+    }, 1400);
+
+    setTimeout(() => {
+      if (step2) {
+        step2.classList.remove('active');
+        step2.classList.add('completed');
+      }
+      if (lines[1]) lines[1].classList.add('completed');
+      if (step3) step3.classList.add('active');
+    }, 3000);
+
+    setTimeout(() => {
+      if (step3) {
+        step3.classList.remove('active');
+        step3.classList.add('completed');
+      }
+      if (lines[2]) lines[2].classList.add('completed');
+      if (step4) step4.classList.add('active');
+    }, 5500);
+
+    setTimeout(() => {
+      if (step4) {
+        step4.classList.remove('active');
+        step4.classList.add('completed');
+      }
+    }, 7000);
+
+    // Print logs
     logLines.forEach(line => {
       setTimeout(() => {
         const div = document.createElement('div');
         div.className = 'terminal-line';
         
-        if (line.isJson) {
-          div.style.color = '#f1c40f';
-          div.style.fontFamily = 'monospace';
-          div.style.paddingLeft = '15px';
-        } else if (line.isSql) {
-          div.style.color = '#3498db';
-          div.style.fontFamily = 'monospace';
-          div.style.paddingLeft = '10px';
+        if (line.text.startsWith('✓')) {
+          div.style.color = '#2ecc71'; // Success Green
+          div.style.fontWeight = '600';
+        } else {
+          div.style.color = '#a3ccb4'; // Soft Muted Sage
         }
         
         div.textContent = line.text;
