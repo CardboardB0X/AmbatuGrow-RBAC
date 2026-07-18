@@ -272,15 +272,15 @@ const faqData = [
     id: 7,
     category: "helpdesk",
     question: "Liah, gets mo na?",
-    answer: "Oo naman, ITEC 75 matches are fully mapped! Gets na gets na! <br><br><div style='text-align: center;'><img src='https://media.giphy.com/media/Vuw9m5wXviFIQ/giphy.gif' alt='Rickroll' style='max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-height: 250px;'></div>",
-    tags: ["liah", "gets mo na", "easter egg", "cvsu", "rickroll", "gif"]
+    answer: "<div style='text-align: center;'><img src='https://media.giphy.com/media/Vuw9m5wXviFIQ/giphy.gif' alt='Rickroll' style='max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-height: 250px;'></div>",
+    tags: []
   },
   {
     id: 8,
     category: "helpdesk",
     question: "Emman, kaya pa ba?",
-    answer: "Kakayanin pa! WMS stock locations are locked in, SLAs are running, and database DDL schemas compile perfectly. CVSU IT Dept is ready! <br><br><div style='text-align: center;'><img src='https://media.giphy.com/media/10UUe8ZsLnaqwo/giphy.gif' alt='Billy Herrington' style='max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-height: 250px;'></div>",
-    tags: ["emman", "kaya pa ba", "easter egg", "cvsu", "gachimuchi", "billy herrington", "gif"]
+    answer: "<div style='text-align: center;'><img src='https://media.giphy.com/media/10UUe8ZsLnaqwo/giphy.gif' alt='Billy Herrington' style='max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-height: 250px;'></div>",
+    tags: []
   }
 ];
 
@@ -1205,9 +1205,11 @@ function renderFAQs(faqs) {
       <div class="faq-body">
         <div class="faq-body-content">
           <p>${faq.answer}</p>
+          ${faq.tags && faq.tags.length > 0 ? `
           <div class="faq-tags">
             ${faq.tags.map(t => `<span class="tag">#${t}</span>`).join('')}
           </div>
+          ` : ''}
         </div>
       </div>
     </div>
