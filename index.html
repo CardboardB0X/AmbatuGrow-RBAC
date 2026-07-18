@@ -13,11 +13,28 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Mermaid.js Compiler -->
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-  
   <!-- Style Sheet -->
   <link rel="stylesheet" href="style.css">
+  
+  <!-- Load Mermaid as an ES Module, export to window, and initialize -->
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    window.mermaid = mermaid;
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#1e293b',
+        primaryTextColor: '#f8fafc',
+        primaryBorderColor: '#475569',
+        lineColor: '#6366f1',
+        secondaryColor: '#3b82f6',
+        tertiaryColor: '#1e293b'
+      }
+    });
+    // Dispatch event to notify app.js that mermaid is ready
+    window.dispatchEvent(new CustomEvent('mermaid-loaded'));
+  </script>
 </head>
 <body>
 
@@ -201,7 +218,7 @@
           </div>
         </section>
         
-        <!-- View 3: Documentation Center (Now Includes FAQ Portal) -->
+        <!-- View 3: Documentation Center -->
         <section id="documentation-view" class="view-section">
           <div class="docs-header-bar">
             <div class="docs-subtabs">
@@ -397,7 +414,7 @@
               </div>
             </div>
             
-            <!-- Docs Panel 4: Helpdesk & FAQs (Integrated Here) -->
+            <!-- Docs Panel 4: Helpdesk & FAQs -->
             <div id="doc-faq" class="doc-panel">
               
               <!-- Category Pills -->

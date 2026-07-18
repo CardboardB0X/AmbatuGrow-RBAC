@@ -11,18 +11,18 @@ const flowcharts = {
     classDef help fill:#6b46c1,stroke:#805ad5,stroke-width:2px,color:#fff;
 
     subgraph Core_Master ["1. Core & Master Data"]
-        U[Users & Roles Table]:::core
+        U["Users & Roles Table"]:::core
     end
 
     subgraph Procurement_SCM ["2. Procurement & Supply Chain"]
         PR[Purchase Requisition]:::proc -->|Mgr Approval| PO[Purchase Orders]:::proc
-        SUP[Suppliers & Product_Suppliers]:::proc --> PO
+        SUP["Suppliers & Product_Suppliers"]:::proc --> PO
     end
 
     subgraph Inventory_WMS ["3. Product & Inventory (WMS)"]
         INV[Inventory_Locations]:::inv
         ST[Stock_Transactions]:::inv
-        PROD[Products & Categories]:::inv
+        PROD["Products & Categories"]:::inv
     end
 
     subgraph Sales_CRM ["4. Sales & Customer Management"]
@@ -37,8 +37,8 @@ const flowcharts = {
 
     subgraph Finance_Acct ["6. Finance & Accounting"]
         GL[General Ledger Entries]:::fin
-        AP[Accounts Payable / Supplier Invoices]:::fin
-        AR[Accounts Receivable / Invoicing]:::fin
+        AP["Accounts Payable / Supplier Invoices"]:::fin
+        AR["Accounts Receivable / Invoicing"]:::fin
     end
 
     INV -->|Below min_quantity_threshold| PR
@@ -392,7 +392,6 @@ function initPanZoomEngine() {
 
   // Mouse Dragging
   wrapper.addEventListener('mousedown', (e) => {
-    // Only drag with left click
     if (e.button !== 0) return;
     isDragging = true;
     startX = e.clientX - panX;
@@ -492,7 +491,7 @@ function initTabs() {
   });
 }
 
-// 6. Mermaid Diagram Handler
+// 6. Mermaid Diagram Handler (Safe layout check)
 let renderingDiagram = false;
 async function renderMermaidDiagram(key) {
   if (renderingDiagram) return;
@@ -503,22 +502,30 @@ async function renderMermaidDiagram(key) {
   
   container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-circle-notch fa-spin"></i> Rendering Vector Graphics...</div>`;
   
-  try {
-    container.removeAttribute('data-processed');
-    
-    const id = `mermaid-render-${Date.now()}`;
-    const rawHTML = `<div class="mermaid" id="${id}">${code}</div>`;
-    container.innerHTML = rawHTML;
-    
-    await mermaid.run({
-      nodes: [document.getElementById(id)]
-    });
-  } catch (err) {
-    console.error("Mermaid Render Error:", err);
-    container.innerHTML = `<div class="error-box"><i class="fa-solid fa-triangle-exclamation"></i> Rendering failed. Mermaid syntax is compiling on GitHub natively.</div>`;
-  } finally {
-    renderingDiagram = false;
-  }
+  // Give the browser 50ms to ensure the layout has updated (width/height calculated)
+  setTimeout(async () => {
+    try {
+      if (typeof window.mermaid === 'undefined') {
+        container.innerHTML = `<div class="error-box" style="color: var(--color-danger); padding: 20px;"><i class="fa-solid fa-triangle-exclamation"></i> Mermaid library failed to load from CDN. Check your internet connection.</div>`;
+        renderingDiagram = false;
+        return;
+      }
+      
+      container.removeAttribute('data-processed');
+      const id = `mermaid-render-${Date.now()}`;
+      const rawHTML = `<div class="mermaid" id="${id}">${code}</div>`;
+      container.innerHTML = rawHTML;
+      
+      await window.mermaid.run({
+        nodes: [document.getElementById(id)]
+      });
+    } catch (err) {
+      console.error("Mermaid Render Error:", err);
+      container.innerHTML = `<div class="error-box" style="color: var(--color-danger); padding: 20px;"><i class="fa-solid fa-triangle-exclamation"></i> Rendering failed. Mermaid syntax is compiling on GitHub natively.</div>`;
+    } finally {
+      renderingDiagram = false;
+    }
+  }, 50);
 }
 
 function initFlowchartTabs() {
@@ -647,6 +654,7 @@ function initDocsAndSearchEngine() {
     } else {
       // Normal Document Panels text filtering
       const activePanel = document.getElementById(`doc-${currentDocTab}`);
+      if (!activePanel) return;
       const sections = activePanel.querySelectorAll('.filterable-section');
 
       sections.forEach(sec => {
@@ -669,18 +677,22 @@ function initDocsAndSearchEngine() {
   };
 
   // Search Input Bindings
-  searchInput.addEventListener('input', (e) => {
-    searchQuery = e.target.value;
-    clearBtn.style.display = searchQuery ? 'block' : 'none';
-    executeSearch();
-  });
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      if (clearBtn) clearBtn.style.display = searchQuery ? 'block' : 'none';
+      executeSearch();
+    });
+  }
 
-  clearBtn.addEventListener('click', () => {
-    searchInput.value = '';
-    searchQuery = '';
-    clearBtn.style.display = 'none';
-    executeSearch();
-  });
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      searchQuery = '';
+      clearBtn.style.display = 'none';
+      executeSearch();
+    });
+  }
 
   // FAQ Category Filter Pills Bindings
   filterBtns.forEach(btn => {
@@ -704,6 +716,8 @@ function initRBACSimulator() {
   const dutiesList = document.getElementById('rbac-duties-list');
   const gridContainer = document.getElementById('rbac-permissions-grid');
 
+  if (!roleSelect) return;
+
   const modulesMap = {
     core: "Core Master Data",
     proc: "Procurement & Purchase",
@@ -722,37 +736,41 @@ function initRBACSimulator() {
     const role = rbacRoles[roleKey];
     if (!role) return;
 
-    cardTitle.textContent = role.title;
-    cardDesc.textContent = role.desc;
+    if (cardTitle) cardTitle.textContent = role.title;
+    if (cardDesc) cardDesc.textContent = role.desc;
     
     // Render duties
-    dutiesList.innerHTML = role.duties.map(d => `
-      <li>
-        <i class="fa-solid fa-circle-check"></i>
-        <span>${d}</span>
-      </li>
-    `).join('');
+    if (dutiesList) {
+      dutiesList.innerHTML = role.duties.map(d => `
+        <li>
+          <i class="fa-solid fa-circle-check"></i>
+          <span>${d}</span>
+        </li>
+      `).join('');
+    }
 
     // Render permission badges grid with full spelled out titles
-    gridContainer.innerHTML = Object.keys(role.perms).map(moduleKey => {
-      const permValue = role.perms[moduleKey];
-      let badgeClass = 'badge-none';
-      
-      if (permValue.startsWith('Full Access')) {
-        badgeClass = 'badge-full';
-      } else if (permValue.startsWith('Read & Write')) {
-        badgeClass = 'badge-rw';
-      } else if (permValue.startsWith('Read-Only')) {
-        badgeClass = 'badge-r';
-      }
+    if (gridContainer) {
+      gridContainer.innerHTML = Object.keys(role.perms).map(moduleKey => {
+        const permValue = role.perms[moduleKey];
+        let badgeClass = 'badge-none';
+        
+        if (permValue.startsWith('Full Access')) {
+          badgeClass = 'badge-full';
+        } else if (permValue.startsWith('Read & Write')) {
+          badgeClass = 'badge-rw';
+        } else if (permValue.startsWith('Read-Only')) {
+          badgeClass = 'badge-r';
+        }
 
-      return `
-        <div class="permission-grid-item">
-          <span class="module-name">${modulesMap[moduleKey]}</span>
-          <span class="perm-badge ${badgeClass}">${permValue}</span>
-        </div>
-      `;
-    }).join('');
+        return `
+          <div class="permission-grid-item">
+            <span class="module-name">${modulesMap[moduleKey]}</span>
+            <span class="perm-badge ${badgeClass}">${permValue}</span>
+          </div>
+        `;
+      }).join('');
+    }
   };
 
   roleSelect.addEventListener('change', (e) => {
@@ -763,25 +781,43 @@ function initRBACSimulator() {
   updateRoleDisplay(roleSelect.value);
 }
 
-// Initialize Everything
-document.addEventListener('DOMContentLoaded', () => {
-  // Config Mermaid theme
-  mermaid.initialize({
-    startOnLoad: false,
-    theme: 'dark',
-    themeVariables: {
-      primaryColor: '#1e293b',
-      primaryTextColor: '#f8fafc',
-      primaryBorderColor: '#475569',
-      lineColor: '#6366f1',
-      secondaryColor: '#3b82f6',
-      tertiaryColor: '#1e293b'
-    }
-  });
+// 10. Initialization orchestrator (Handles race conditions with ESM script loading)
+let mermaidInitialized = false;
 
+function initApp() {
+  if (mermaidInitialized) return;
+  
+  if (typeof window.mermaid === 'undefined') {
+    // Wait for the custom event fired by the ESM script in index.html
+    window.addEventListener('mermaid-loaded', () => {
+      mermaidInitialized = true;
+      runInitialization();
+    });
+  } else {
+    mermaidInitialized = true;
+    runInitialization();
+  }
+}
+
+function runInitialization() {
   initTabs();
   initFlowchartTabs();
   initPanZoomEngine();
   initDocsAndSearchEngine();
   initRBACSimulator();
-});
+  
+  // Render initial flowchart if active view is flowcharts
+  const activeSection = document.querySelector('.view-section.active');
+  if (activeSection && activeSection.id === 'flowcharts-view') {
+    const activeFlowTab = document.querySelector('.flow-tab.active');
+    const diagramName = activeFlowTab ? activeFlowTab.getAttribute('data-diagram') : 'orchestration';
+    renderMermaidDiagram(diagramName);
+  }
+}
+
+// Bind load hooks
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
