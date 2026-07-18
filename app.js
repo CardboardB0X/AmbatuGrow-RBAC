@@ -162,7 +162,7 @@ const flowcharts = {
     H15 --> H16([End Process]):::help`
 };
 
-// 2. FAQ Portal Database
+// 2. FAQ Portal Database (Integrated into Documentation view)
 const faqData = [
   {
     id: 1,
@@ -203,7 +203,7 @@ const faqData = [
     id: 6,
     category: "helpdesk",
     question: "How do support tickets verify SLA compliance?",
-    answer: "Upon ticket creation, the system assigns a priority (Low, Medium, High) based on incident severity. It then references the SLA Rules Matrix to stamp a target resolution timestamp. A background daemon monitors tickets; if a ticket is unresolved as it approaches this deadline, it triggers an auto-escalation warning to the Operations Manager.",
+    answer: "Upon ticket creation, the system assigns a priority (Low, Medium, High, Critical) based on incident severity. It then references the SLA Rules Matrix to stamp a target resolution timestamp. A background daemon monitors tickets; if a ticket is unresolved as it approaches this deadline, it triggers an auto-escalation warning to the Operations Manager.",
     tags: ["SLA", "helpdesk", "ticket", "priority", "escalation"]
   },
   {
@@ -236,7 +236,7 @@ const faqData = [
   }
 ];
 
-// 3. RBAC Simulator Database
+// 3. RBAC Simulator Database (Fully Spelled Out Permission Names)
 const rbacRoles = {
   superadmin: {
     title: "Super Admin",
@@ -247,7 +247,7 @@ const rbacRoles = {
       "Access and export all reports, audit trails, and financial files.",
       "Override system locks, blockages, or invalid transactions."
     ],
-    perms: { core: "F", proc: "F", wms: "F", scm: "F", sales: "F", help: "F", fin: "F", ecom: "F", proj: "F", hr: "F", bi: "F" }
+    perms: { core: "Full Access", proc: "Full Access", wms: "Full Access", scm: "Full Access", sales: "Full Access", help: "Full Access", fin: "Full Access", ecom: "Full Access", proj: "Full Access", hr: "Full Access", bi: "Full Access" }
   },
   employee: {
     title: "General Employee",
@@ -258,7 +258,7 @@ const rbacRoles = {
       "Submit helpdesk support tickets for equipment or account issues.",
       "View and execute tasks assigned within project workspaces."
     ],
-    perms: { core: "None", proc: "RW (Req)", wms: "None", scm: "None", sales: "None", help: "RW (Ticket)", fin: "None", ecom: "None", proj: "RW (Task)", hr: "R (Self)", bi: "None" }
+    perms: { core: "No Access", proc: "Read & Write (Requisitions)", wms: "No Access", scm: "No Access", sales: "No Access", help: "Read & Write (Tickets)", fin: "No Access", ecom: "No Access", proj: "Read & Write (Tasks)", hr: "Read-Only (Self)", bi: "No Access" }
   },
   pm: {
     title: "Project Manager",
@@ -269,7 +269,7 @@ const rbacRoles = {
       "Track project expenditures against budget estimates in real-time.",
       "Monitor task completion rates and compile progress dashboards."
     ],
-    perms: { core: "None", proc: "None", wms: "None", scm: "None", sales: "None", help: "None", fin: "R (Cost)", ecom: "None", proj: "F", hr: "R (Staff)", bi: "R" }
+    perms: { core: "No Access", proc: "No Access", wms: "No Access", scm: "No Access", sales: "No Access", help: "No Access", fin: "Read-Only (Project Costs)", ecom: "No Access", proj: "Full Access", hr: "Read-Only (Staff Assignees)", bi: "Read-Only" }
   },
   hrm: {
     title: "HR Specialist / Manager",
@@ -280,7 +280,7 @@ const rbacRoles = {
       "Manage recruitment, coordinate applicant pipelines, and onboarding tasks.",
       "Administer leaves, timesheets, and biometric attendance reports."
     ],
-    perms: { core: "None", proc: "None", wms: "None", scm: "None", sales: "None", help: "None", fin: "R (Payroll)", ecom: "None", proj: "R", hr: "F", bi: "R" }
+    perms: { core: "No Access", proc: "No Access", wms: "No Access", scm: "No Access", sales: "No Access", help: "No Access", fin: "Read-Only (Payroll Allocations)", ecom: "No Access", proj: "Read-Only", hr: "Full Access", bi: "Read-Only" }
   },
   fm: {
     title: "Finance Manager",
@@ -291,7 +291,7 @@ const rbacRoles = {
       "Oversee regulatory compliance, tax submissions, and external audits.",
       "Approve high-value invoices and payments locked by specialists."
     ],
-    perms: { core: "R", proc: "R", wms: "None", scm: "None", sales: "R", help: "None", fin: "F", ecom: "None", proj: "R", hr: "R", bi: "F" }
+    perms: { core: "Read-Only", proc: "Read-Only", wms: "No Access", scm: "No Access", sales: "Read-Only", help: "No Access", fin: "Full Access", ecom: "No Access", proj: "Read-Only", hr: "Read-Only", bi: "Full Access" }
   },
   accountant: {
     title: "Accountant",
@@ -302,7 +302,7 @@ const rbacRoles = {
       "Reconcile bank statements and post credit/debit entries to the General Ledger.",
       "Review employee payroll computations for accounting integration."
     ],
-    perms: { core: "None", proc: "R (Bills)", wms: "None", scm: "None", sales: "R (Sales)", help: "None", fin: "RW", ecom: "None", proj: "None", hr: "R (Payroll)", bi: "R" }
+    perms: { core: "No Access", proc: "Read-Only (Supplier Invoices)", wms: "No Access", scm: "No Access", sales: "Read-Only (Sales Billing)", help: "No Access", fin: "Read & Write", ecom: "No Access", proj: "No Access", hr: "Read-Only (Payroll Ledger)", bi: "Read-Only" }
   },
   salesrep: {
     title: "Sales Representative",
@@ -313,7 +313,7 @@ const rbacRoles = {
       "Convert quotes into Sales Orders and verify initial stock availability.",
       "Sync order contexts and customer details with E-Commerce modules."
     ],
-    perms: { core: "None", proc: "None", wms: "R (Stock)", scm: "None", sales: "RW", help: "R", fin: "None", ecom: "RW", proj: "None", hr: "None", bi: "R" }
+    perms: { core: "No Access", proc: "No Access", wms: "Read-Only (Stock Balance)", scm: "No Access", sales: "Read & Write", help: "Read-Only", fin: "No Access", ecom: "Read & Write", proj: "No Access", hr: "No Access", bi: "Read-Only" }
   },
   supportrep: {
     title: "Customer Support Rep",
@@ -324,7 +324,7 @@ const rbacRoles = {
       "Publish self-service troubleshooting articles and FAQ guides.",
       "Escalate unresolved issues violating SLA windows to managers."
     ],
-    perms: { core: "None", proc: "None", wms: "None", scm: "None", sales: "R (Orders)", help: "RW", fin: "None", ecom: "None", proj: "None", hr: "None", bi: "R" }
+    perms: { core: "No Access", proc: "No Access", wms: "No Access", scm: "No Access", sales: "Read-Only (Customer Orders)", help: "Read & Write", fin: "No Access", ecom: "No Access", proj: "No Access", hr: "No Access", bi: "Read-Only" }
   },
   wmsmgr: {
     title: "WMS Manager",
@@ -335,7 +335,7 @@ const rbacRoles = {
       "Oversee large-scale inter-warehouse transfers and shipments.",
       "Review stock balance metrics and dispatch inventory reports."
     ],
-    perms: { core: "None", proc: "R (PO)", wms: "F", scm: "RW", sales: "None", help: "None", fin: "None", ecom: "R", proj: "None", hr: "None", bi: "R" }
+    perms: { core: "No Access", proc: "Read-Only (Supplier POs)", wms: "Full Access", scm: "Read & Write", sales: "No Access", help: "No Access", fin: "No Access", ecom: "Read-Only", proj: "No Access", hr: "No Access", bi: "Read-Only" }
   },
   wmsoperator: {
     title: "Warehouse Operator",
@@ -346,7 +346,7 @@ const rbacRoles = {
       "Fulfill outgoing sales order lists, logging 'Stock-Out' transactions.",
       "Execute physical stock transfers between storage zones."
     ],
-    perms: { core: "None", proc: "None", wms: "RW", scm: "RW", sales: "None", help: "None", fin: "None", ecom: "None", proj: "None", hr: "None", bi: "None" }
+    perms: { core: "No Access", proc: "No Access", wms: "Read & Write", scm: "Read & Write", sales: "No Access", help: "No Access", fin: "No Access", ecom: "No Access", proj: "No Access", hr: "No Access", bi: "No Access" }
   },
   procspecialist: {
     title: "Procurement Specialist",
@@ -357,7 +357,7 @@ const rbacRoles = {
       "Review vendor delivery performance, ratings, and compliance metrics.",
       "Coordinate with SCM to expedite urgent supply shipments."
     ],
-    perms: { core: "None", proc: "RW", wms: "R", scm: "RW", sales: "None", help: "None", fin: "R (AP)", ecom: "None", proj: "None", hr: "None", bi: "R" }
+    perms: { core: "No Access", proc: "Read & Write", wms: "Read-Only", scm: "Read & Write", sales: "No Access", help: "No Access", fin: "Read-Only (Vendor Invoices)", ecom: "No Access", proj: "No Access", hr: "No Access", bi: "Read-Only" }
   },
   ecomadmin: {
     title: "E-Commerce Administrator",
@@ -368,17 +368,105 @@ const rbacRoles = {
       "Manage online catalog product detail uploads and price points.",
       "Coordinate web customer profiles and payment gateways."
     ],
-    perms: { core: "None", proc: "None", wms: "R", scm: "None", sales: "R", help: "None", fin: "None", ecom: "RW", proj: "None", hr: "None", bi: "R" }
+    perms: { core: "No Access", proc: "No Access", wms: "Read-Only", scm: "No Access", sales: "Read-Only", help: "No Access", fin: "No Access", ecom: "Read & Write", proj: "No Access", hr: "No Access", bi: "Read-Only" }
   }
 };
 
-// 4. Tab Routing & Views Management
+// 4. Flowchart Pan & Zoom Controls Module
+let scale = 1.0;
+let panX = 0;
+let panY = 0;
+let isDragging = false;
+let startX = 0;
+let startY = 0;
+
+function initPanZoomEngine() {
+  const wrapper = document.getElementById('diagram-canvas-wrapper');
+  const container = document.getElementById('mermaid-container');
+  
+  if (!wrapper || !container) return;
+
+  const applyTransform = () => {
+    container.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  };
+
+  // Mouse Dragging
+  wrapper.addEventListener('mousedown', (e) => {
+    // Only drag with left click
+    if (e.button !== 0) return;
+    isDragging = true;
+    startX = e.clientX - panX;
+    startY = e.clientY - panY;
+    wrapper.style.cursor = 'grabbing';
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    panX = e.clientX - startX;
+    panY = e.clientY - startY;
+    applyTransform();
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      wrapper.style.cursor = 'grab';
+    }
+  });
+
+  wrapper.addEventListener('mouseleave', () => {
+    if (isDragging) {
+      isDragging = false;
+      wrapper.style.cursor = 'grab';
+    }
+  });
+
+  // Mouse Wheel Zooming
+  wrapper.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const zoomIntensity = 0.08;
+    const factor = e.deltaY < 0 ? (1 + zoomIntensity) : (1 - zoomIntensity);
+    
+    scale = Math.min(Math.max(scale * factor, 0.25), 4.0);
+    applyTransform();
+  }, { passive: false });
+
+  // Control Buttons
+  document.getElementById('btn-zoom-in').addEventListener('click', () => {
+    scale = Math.min(scale * 1.15, 4.0);
+    applyTransform();
+  });
+
+  document.getElementById('btn-zoom-out').addEventListener('click', () => {
+    scale = Math.max(scale / 1.15, 0.25);
+    applyTransform();
+  });
+
+  document.getElementById('btn-zoom-reset').addEventListener('click', () => {
+    scale = 1.0;
+    panX = 0;
+    panY = 0;
+    applyTransform();
+  });
+}
+
+function resetPanZoomState() {
+  scale = 1.0;
+  panX = 0;
+  panY = 0;
+  const container = document.getElementById('mermaid-container');
+  if (container) {
+    container.style.transform = `translate(0px, 0px) scale(1.0)`;
+  }
+}
+
+// 5. Tab Routing & Views Management
 function initTabs() {
   const navItems = document.querySelectorAll('.nav-item');
   const viewSections = document.querySelectorAll('.view-section');
 
   navItems.forEach(item => {
-    item.addEventListener('click', async () => {
+    item.addEventListener('click', () => {
       const targetView = item.getAttribute('data-view');
       
       // Update sidebar active class
@@ -395,6 +483,7 @@ function initTabs() {
 
       // Specific view controllers
       if (targetView === 'flowcharts') {
+        resetPanZoomState();
         const activeFlowTab = document.querySelector('.flow-tab.active');
         const diagramName = activeFlowTab ? activeFlowTab.getAttribute('data-diagram') : 'orchestration';
         renderMermaidDiagram(diagramName);
@@ -403,7 +492,7 @@ function initTabs() {
   });
 }
 
-// 5. Mermaid Diagram Handler
+// 6. Mermaid Diagram Handler
 let renderingDiagram = false;
 async function renderMermaidDiagram(key) {
   if (renderingDiagram) return;
@@ -415,15 +504,12 @@ async function renderMermaidDiagram(key) {
   container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-circle-notch fa-spin"></i> Rendering Vector Graphics...</div>`;
   
   try {
-    // Clear processed tags so Mermaid compiles it from scratch
     container.removeAttribute('data-processed');
     
-    // Set code inside a pre block
     const id = `mermaid-render-${Date.now()}`;
     const rawHTML = `<div class="mermaid" id="${id}">${code}</div>`;
     container.innerHTML = rawHTML;
     
-    // Initialize & Compile
     await mermaid.run({
       nodes: [document.getElementById(id)]
     });
@@ -442,19 +528,22 @@ function initFlowchartTabs() {
       tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       const diagramKey = tab.getAttribute('data-diagram');
+      resetPanZoomState();
       renderMermaidDiagram(diagramKey);
     });
   });
 }
 
-// 6. FAQ Search Engine
+// 7. FAQ Renderer (Integrated)
 function renderFAQs(faqs) {
   const container = document.getElementById('faq-accordion-container');
+  if (!container) return;
+
   if (faqs.length === 0) {
     container.innerHTML = `
       <div class="empty-results">
         <i class="fa-regular fa-folder-open"></i>
-        <p>No results match your search keywords.</p>
+        <p>No FAQs match your search keywords.</p>
         <span>Try searching terms like "3-way match", "reorder", "hold", or "SLA".</span>
       </div>
     `;
@@ -501,62 +590,113 @@ function renderFAQs(faqs) {
   });
 }
 
-function initFAQEngine() {
-  const searchInput = document.getElementById('faq-search-input');
-  const clearBtn = document.getElementById('clear-search-btn');
+// 8. Documentation Center & Unified Search
+function initDocsAndSearchEngine() {
+  const tabs = document.querySelectorAll('.doc-tab');
+  const panels = document.querySelectorAll('.doc-panel');
+  const searchInput = document.getElementById('docs-search-input');
+  const clearBtn = document.getElementById('docs-clear-btn');
   const filterBtns = document.querySelectorAll('.filter-btn');
-  
-  let currentCategory = 'all';
-  let searchQuery = '';
 
-  const filterAndRender = () => {
-    let filtered = faqData;
-    
-    // Filter Category
-    if (currentCategory !== 'all') {
-      filtered = filtered.filter(f => f.category === currentCategory);
+  let currentDocTab = 'concepts';
+  let searchQuery = '';
+  let currentFAQCategory = 'all';
+
+  // Handler to switch subtabs
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      currentDocTab = tab.getAttribute('data-doc');
+      
+      panels.forEach(panel => {
+        panel.classList.remove('active');
+        if (panel.id === `doc-${currentDocTab}`) {
+          panel.classList.add('active');
+        }
+      });
+
+      // Rerun search logic for the active tab context
+      executeSearch();
+    });
+  });
+
+  // Unified Search execution
+  const executeSearch = () => {
+    const query = searchQuery.toLowerCase().trim();
+
+    if (currentDocTab === 'faq') {
+      // FAQ Search & Filter
+      let filtered = faqData;
+
+      // Category Pill filter
+      if (currentFAQCategory !== 'all') {
+        filtered = filtered.filter(f => f.category === currentFAQCategory);
+      }
+
+      // Keyword search
+      if (query !== '') {
+        filtered = filtered.filter(f => 
+          f.question.toLowerCase().includes(query) || 
+          f.answer.toLowerCase().includes(query) ||
+          f.tags.some(tag => tag.toLowerCase().includes(query))
+        );
+      }
+      renderFAQs(filtered);
+    } else {
+      // Normal Document Panels text filtering
+      const activePanel = document.getElementById(`doc-${currentDocTab}`);
+      const sections = activePanel.querySelectorAll('.filterable-section');
+
+      sections.forEach(sec => {
+        if (query === '') {
+          sec.classList.remove('hidden-section');
+        } else {
+          const keywords = sec.getAttribute('data-keywords') || '';
+          const textContent = sec.textContent || '';
+          
+          const match = keywords.toLowerCase().includes(query) || textContent.toLowerCase().includes(query);
+          
+          if (match) {
+            sec.classList.remove('hidden-section');
+          } else {
+            sec.classList.add('hidden-section');
+          }
+        }
+      });
     }
-    
-    // Filter Search Text
-    if (searchQuery.trim() !== '') {
-      const q = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(f => 
-        f.question.toLowerCase().includes(q) || 
-        f.answer.toLowerCase().includes(q) ||
-        f.tags.some(tag => tag.toLowerCase().includes(q))
-      );
-    }
-    
-    renderFAQs(filtered);
   };
 
+  // Search Input Bindings
   searchInput.addEventListener('input', (e) => {
     searchQuery = e.target.value;
     clearBtn.style.display = searchQuery ? 'block' : 'none';
-    filterAndRender();
+    executeSearch();
   });
 
   clearBtn.addEventListener('click', () => {
     searchInput.value = '';
     searchQuery = '';
     clearBtn.style.display = 'none';
-    filterAndRender();
+    executeSearch();
   });
 
+  // FAQ Category Filter Pills Bindings
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       filterBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      currentCategory = btn.getAttribute('data-category');
-      filterAndRender();
+      currentFAQCategory = btn.getAttribute('data-category');
+      executeSearch();
     });
   });
 
-  // Initial Load
+  // Initial Load of FAQs
   renderFAQs(faqData);
 }
 
-// 7. RBAC Simulator Engine
+// 9. RBAC Simulator Engine (Spells out permissions in full)
 function initRBACSimulator() {
   const roleSelect = document.getElementById('rbac-role-select');
   const cardTitle = document.getElementById('rbac-card-title');
@@ -593,16 +733,16 @@ function initRBACSimulator() {
       </li>
     `).join('');
 
-    // Render permission badges grid
+    // Render permission badges grid with full spelled out titles
     gridContainer.innerHTML = Object.keys(role.perms).map(moduleKey => {
       const permValue = role.perms[moduleKey];
       let badgeClass = 'badge-none';
       
-      if (permValue === 'F') {
+      if (permValue.startsWith('Full Access')) {
         badgeClass = 'badge-full';
-      } else if (permValue.startsWith('RW')) {
+      } else if (permValue.startsWith('Read & Write')) {
         badgeClass = 'badge-rw';
-      } else if (permValue.startsWith('R')) {
+      } else if (permValue.startsWith('Read-Only')) {
         badgeClass = 'badge-r';
       }
 
@@ -623,27 +763,6 @@ function initRBACSimulator() {
   updateRoleDisplay(roleSelect.value);
 }
 
-// 8. Documentation Router
-function initDocsRouter() {
-  const tabs = document.querySelectorAll('.doc-tab');
-  const panels = document.querySelectorAll('.doc-panel');
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-
-      const targetPanel = tab.getAttribute('data-doc');
-      panels.forEach(panel => {
-        panel.classList.remove('active');
-        if (panel.id === `doc-${targetPanel}`) {
-          panel.classList.add('active');
-        }
-      });
-    });
-  });
-}
-
 // Initialize Everything
 document.addEventListener('DOMContentLoaded', () => {
   // Config Mermaid theme
@@ -662,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initTabs();
   initFlowchartTabs();
-  initFAQEngine();
+  initPanZoomEngine();
+  initDocsAndSearchEngine();
   initRBACSimulator();
-  initDocsRouter();
 });

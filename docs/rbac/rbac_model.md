@@ -96,26 +96,22 @@ graph TD
 
 ## 📊 Role-Permission Matrix
 
-The table below indicates the permission level for each role across modules:
-* 🔴 **F** = Full Access (Create, Read, Update, Delete)
-* 🔵 **RW** = Read & Write (Create, Read, Update)
-* 🟢 **R** = Read-Only (Read)
-* ⚪ **None** = No Access
+The table below indicates the exact permission level for each role across modules, using fully written-out, clear values.
 
 | Security Role | Core Master Data | Procurement | Inventory & WMS | Supply Chain | Sales & CRM | Helpdesk | Finance | E-Commerce | Project Mgmt | HR | BI Reports |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Super Admin** | **F** | **F** | **F** | **F** | **F** | **F** | **F** | **F** | **F** | **F** | **F** |
-| **General Employee** | None | **RW** *(Req)* | None | None | None | **RW** *(Ticket)* | None | None | **RW** *(Task)* | **R** *(Self)* | None |
-| **Project Manager** | None | None | None | None | None | None | **R** *(Cost)* | None | **F** | **R** *(Staff)* | **R** |
-| **HR Manager** | None | None | None | None | None | None | **R** *(Payroll)* | None | **R** | **F** | **R** |
-| **Finance Manager** | **R** | **R** | None | None | **R** | None | **F** | None | **R** | **R** | **F** |
-| **Accountant** | None | **R** *(Bills)* | None | None | **R** *(Sales)* | None | **RW** | None | None | **R** *(Payroll)* | **R** |
-| **Sales Rep** | None | None | **R** *(Stock)* | None | **RW** | **R** | None | **RW** | None | None | **R** |
-| **Support Rep** | None | None | None | None | **R** *(Orders)* | **RW** | None | None | None | None | **R** |
-| **WMS Manager** | None | **R** *(PO)* | **F** | **RW** | None | None | None | **R** | None | None | **R** |
-| **Warehouse Operator** | None | None | **RW** | **RW** | None | None | None | None | None | None | None |
-| **Procurement Specialist** | None | **RW** | **R** | **RW** | None | None | **R** *(AP)* | None | None | None | **R** |
-| **E-Commerce Admin** | None | None | **R** | None | **R** | None | None | **RW** | None | None | **R** |
+| **Super Admin** | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access |
+| **General Employee** | No Access | Read & Write *(PR)* | No Access | No Access | No Access | Read & Write *(Ticket)* | No Access | No Access | Read & Write *(Task)* | Read-Only *(Self)* | No Access |
+| **Project Manager** | No Access | No Access | No Access | No Access | No Access | No Access | Read-Only *(Cost)* | No Access | Full Access | Read-Only *(Staff)* | Read-Only |
+| **HR Manager** | No Access | No Access | No Access | No Access | No Access | No Access | Read-Only *(Payroll)* | No Access | Read-Only | Full Access | Read-Only |
+| **Finance Manager** | Read-Only | Read-Only | No Access | No Access | Read-Only | No Access | Full Access | No Access | Read-Only | Read-Only | Full Access |
+| **Accountant** | No Access | Read-Only *(Bills)* | No Access | No Access | Read-Only *(Sales)* | No Access | Read & Write | No Access | No Access | Read-Only *(Payroll)* | Read-Only |
+| **Sales Rep** | No Access | No Access | Read-Only *(Stock)* | No Access | Read & Write | Read-Only | No Access | Read & Write | No Access | No Access | Read-Only |
+| **Support Rep** | No Access | No Access | No Access | No Access | Read-Only *(Orders)* | Read & Write | No Access | No Access | No Access | No Access | Read-Only |
+| **WMS Manager** | No Access | Read-Only *(PO)* | Full Access | Read & Write | No Access | No Access | No Access | Read-Only | No Access | No Access | Read-Only |
+| **Warehouse Operator** | No Access | No Access | Read & Write | Read & Write | No Access | No Access | No Access | No Access | No Access | No Access | No Access |
+| **Procurement Specialist** | No Access | Read & Write | Read-Only | Read & Write | No Access | No Access | Read-Only *(AP)* | No Access | No Access | No Access | Read-Only |
+| **E-Commerce Admin** | No Access | No Access | Read-Only | No Access | Read-Only | No Access | No Access | Read & Write | No Access | No Access | Read-Only |
 
 ---
 

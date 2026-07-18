@@ -47,14 +47,6 @@
           <i class="fa-solid fa-shield-halved"></i>
           <span>RBAC Security Matrix</span>
         </li>
-        <li class="nav-item" data-view="faq">
-          <i class="fa-solid fa-circle-question"></i>
-          <span>Helpdesk & FAQ Portal</span>
-        </li>
-        <li class="nav-item" data-view="deployment">
-          <i class="fa-solid fa-cloud-arrow-up"></i>
-          <span>Vercel Deployment</span>
-        </li>
       </ul>
       
       <div class="sidebar-footer">
@@ -104,7 +96,7 @@
             </div>
             <div class="glass-card stat-item database">
               <span>Database ERD Tables</span>
-              <h4>20 Tables</h4>
+              <h4>24 Tables</h4>
             </div>
             <div class="glass-card stat-item sla">
               <span>SLA Target Breach Rate</span>
@@ -147,7 +139,7 @@
                 <p>Centralizes Accounts Payable, Accounts Receivable, and the General Ledger.</p>
               </div>
               
-              <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
+              <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click(); setTimeout(() => document.querySelector('[data-doc=\'faq\']').click(), 50)">
                 <div class="module-card-icon"><i class="fa-solid fa-headset"></i></div>
                 <h4>Customer Support</h4>
                 <p>Manages tickets, assigns support agents, and enforces SLA policies.</p>
@@ -191,173 +183,242 @@
             <button class="flow-tab" data-diagram="helpdesk">Helpdesk SLA</button>
           </div>
           
-          <div class="glass-card diagram-viewer-card">
-            <div id="mermaid-container">
-              <!-- Rendered Dynamically via JS -->
+          <div class="glass-card diagram-viewer-card" style="position: relative;">
+            
+            <!-- Zoom & Pan Controls Overlay -->
+            <div class="diagram-controls">
+              <button id="btn-zoom-in" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+              <button id="btn-zoom-out" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+              <button id="btn-zoom-reset" title="Reset View"><i class="fa-solid fa-arrows-rotate"></i></button>
+              <div class="drag-hint"><i class="fa-solid fa-hand"></i> Click & Drag to Pan</div>
+            </div>
+            
+            <div id="diagram-canvas-wrapper">
+              <div id="mermaid-container">
+                <!-- Rendered Dynamically via JS -->
+              </div>
             </div>
           </div>
         </section>
         
-        <!-- View 3: Documentation Center -->
+        <!-- View 3: Documentation Center (Now Includes FAQ Portal) -->
         <section id="documentation-view" class="view-section">
-          <div class="docs-subtabs">
-            <button class="doc-tab active" data-doc="concepts">ERP Concepts</button>
-            <button class="doc-tab" data-doc="processes">Process Walks</button>
-            <button class="doc-doc-tab doc-tab" data-doc="database">Database Guide</button>
-          </div>
-          
-          <!-- Docs: ERP Concepts -->
-          <div id="doc-concepts" class="doc-panel active">
-            <div class="glass-card doc-article">
-              <div class="doc-section">
-                <h4>1. What is an Enterprise Resource Planning (ERP) System?</h4>
-                <p>
-                  An ERP is a centralized software system designed to coordinate and manage all the core operational departments of a business—ranging from purchasing, inventory management, warehousing, e-commerce, customer relations, human resources, to finance. 
-                </p>
-                <p>
-                  By feeding data into a single master database, an ERP eliminates "data silos" (where one department is unaware of the logs in another). For example, as soon as a customer completes checkout in E-Commerce:
-                </p>
-                <ul>
-                  <li><i class="fa-solid fa-angle-right"></i> The Inventory module immediately decrements stock and updates the online channel.</li>
-                  <li><i class="fa-solid fa-angle-right"></i> The CRM generates a sales order and updates their transaction history.</li>
-                  <li><i class="fa-solid fa-angle-right"></i> The Finance module generates accounts receivable entries and updates the General Ledger.</li>
-                </ul>
-              </div>
-              
-              <div class="doc-section">
-                <h4>2. Key ERP System Boundaries</h4>
-                <p>
-                  ERP systems partition permissions and operations into strict boundaries to prevent critical security errors:
-                </p>
-                <ul>
-                  <li><i class="fa-solid fa-angle-right"></i> <strong>Supply Chain vs. Finance</strong>: While operators manage stock transactions, only accounting personnel can modify financial records or approve invoice payouts.</li>
-                  <li><i class="fa-solid fa-angle-right"></i> <strong>Purchasing vs. Approvals</strong>: Employees request goods via a Requisition, but a separate manager role must approve it before a Purchase Order is dispatched to a supplier. This dual-authorization prevents unauthorized expenditures.</li>
-                </ul>
-              </div>
+          <div class="docs-header-bar">
+            <div class="docs-subtabs">
+              <button class="doc-tab active" data-doc="concepts">ERP Concepts</button>
+              <button class="doc-tab" data-doc="processes">Process Walks</button>
+              <button class="doc-tab" data-doc="database">Database Guide</button>
+              <button class="doc-tab" data-doc="faq">Helpdesk & FAQs</button>
+            </div>
+            
+            <!-- Integrated Search Bar -->
+            <div class="docs-search-bar" id="docs-search-container">
+              <i class="fa-solid fa-magnifying-glass search-icon"></i>
+              <input type="text" id="docs-search-input" placeholder="Search documentation or FAQs...">
+              <button class="clear-btn" id="docs-clear-btn"><i class="fa-solid fa-xmark"></i></button>
             </div>
           </div>
           
-          <!-- Docs: Process Walks -->
-          <div id="doc-processes" class="doc-panel">
-            <div class="glass-card doc-article">
-              <div class="doc-section">
-                <h4>Procurement & Supplier Inbound Lifecycle</h4>
-                <p>
-                  The procurement pipeline coordinates material acquisitions:
-                </p>
-                <ul>
-                  <li><i class="fa-solid fa-circle-check"></i> <strong>PR Initiation</strong>: The department submits a Purchase Requisition.</li>
-                  <li><i class="fa-solid fa-circle-check"></i> <strong>Approval Gate</strong>: The Department Manager verifies budgets and signs off.</li>
-                  <li><i class="fa-solid fa-circle-check"></i> <strong>PO Dispatched</strong>: A formal Purchase Order (PO) detailing products and unit costs is generated and dispatched to the supplier.</li>
-                  <li><i class="fa-solid fa-circle-check"></i> <strong>Dock Stock-in</strong>: Upon delivery, Warehouse Operators verify the SKUs, log quantities in the target zone, and write a 'Stock-in' log.</li>
-                  <li><i class="fa-solid fa-circle-check"></i> <strong>3-Way Match Verification</strong>: The Accountant receives the Supplier Invoice and verifies it against the PO and the Dock Receipt. If matching, payment is released and logged in the General Ledger.</li>
-                </ul>
-              </div>
-              
-              <div class="doc-section">
-                <h4>Sales Fulfillment & Customer Outbound Lifecycle</h4>
-                <p>
-                  The customer fulfillment loop ensures rapid dispatch and billing integrity:
-                </p>
-                <ul>
-                  <li><i class="fa-solid fa-circle-check"></i> <strong>CRM Quote</strong>: Sales Reps query the customer profile, apply discount matrices, and issue a Quotation.</li>
-                  <li><i class="fa-solid fa-circle-check"></i> <strong>Order Creation</strong>: Once confirmed, a Sales Order is created with payment terms.</li>
-                  <li><i class="fa-solid fa-circle-check"></i> <strong>Stock Check</strong>: The system queries the inventory levels. If stock is available, it routes the order to the warehouse. If out of stock, the order is flagged 'On Hold' and triggers a Procurement request.</li>
-                  <li><i class="fa-solid fa-circle-check"></i> <strong>WMS Stock-out</strong>: Operators retrieve the items, package them, decrement inventory locations, and log a 'Stock-out' transaction.</li>
-                  <li><i class="fa-solid fa-circle-check"></i> <strong>Invoicing & Receivable</strong>: The finance team creates a customer invoice. When payment arrives, accounts receivable is reconciled, and the General Ledger is updated.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Docs: Database Guide -->
-          <div id="doc-database" class="doc-panel">
-            <div class="glass-card doc-article">
-              <div class="doc-section">
-                <h4>Database Architecture Overview</h4>
-                <p>
-                  AmbatuGrow uses a highly normalized relational database layout to guarantee transactional integrity (ACID compliance) and prevent data duplication.
-                </p>
-                <div class="doc-table-container">
-                  <table class="doc-table">
-                    <thead>
-                      <tr>
-                        <th>Table Name</th>
-                        <th>Module / Domain</th>
-                        <th>Primary Key</th>
-                        <th>Critical Foreign Keys</th>
-                        <th>Core Function</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td><strong>USERS</strong></td>
-                        <td>Identity Access</td>
-                        <td>id</td>
-                        <td>department_id</td>
-                        <td>Stores credentials and employee linkages.</td>
-                      </tr>
-                      <tr>
-                        <td><strong>ROLES</strong></td>
-                        <td>Identity Access</td>
-                        <td>id</td>
-                        <td>-</td>
-                        <td>Defines access levels and titles.</td>
-                      </tr>
-                      <tr>
-                        <td><strong>PRODUCTS</strong></td>
-                        <td>Inventory & WMS</td>
-                        <td>id</td>
-                        <td>category_id</td>
-                        <td>Stores SKUs, safety thresholds, and pricing.</td>
-                      </tr>
-                      <tr>
-                        <td><strong>INVENTORY_LOCATIONS</strong></td>
-                        <td>Inventory & WMS</td>
-                        <td>id</td>
-                        <td>product_id</td>
-                        <td>Tracks stock balances inside specific warehouse bins.</td>
-                      </tr>
-                      <tr>
-                        <td><strong>STOCK_TRANSACTIONS</strong></td>
-                        <td>Inventory & WMS</td>
-                        <td>id</td>
-                        <td>product_id, location_id</td>
-                        <td>Historical logging of stock additions and deductions.</td>
-                      </tr>
-                      <tr>
-                        <td><strong>PURCHASE_ORDERS</strong></td>
-                        <td>Procurement</td>
-                        <td>id</td>
-                        <td>supplier_id, requisition_id</td>
-                        <td>Logs outbound supply contracts.</td>
-                      </tr>
-                      <tr>
-                        <td><strong>SALES_ORDERS</strong></td>
-                        <td>Sales & CRM</td>
-                        <td>id</td>
-                        <td>customer_id, payment_term_id</td>
-                        <td>Tracks customer acquisitions and billing data.</td>
-                      </tr>
-                      <tr>
-                        <td><strong>TICKETS</strong></td>
-                        <td>Helpdesk</td>
-                        <td>id</td>
-                        <td>customer_id, assigned_agent_id</td>
-                        <td>Logs support inquiries and resolution deadlines.</td>
-                      </tr>
-                      <tr>
-                        <td><strong>GENERAL_LEDGER</strong></td>
-                        <td>Finance</td>
-                        <td>id</td>
-                        <td>-</td>
-                        <td>Double-entry accounting journal.</td>
-                      </tr>
-                    </tbody>
-                  </table>
+          <!-- Docs Section Container -->
+          <div class="docs-content-container">
+            
+            <!-- Docs Panel 1: ERP Concepts -->
+            <div id="doc-concepts" class="doc-panel active search-filterable">
+              <div class="glass-card doc-article">
+                <div class="doc-section filterable-section" data-keywords="erp definition database integration master data silos system boundaries">
+                  <h4>1. What is an Enterprise Resource Planning (ERP) System?</h4>
+                  <p>
+                    An ERP is a centralized software system designed to coordinate and manage all the core operational departments of a business—ranging from purchasing, inventory management, warehousing, e-commerce, customer relations, human resources, to finance. 
+                  </p>
+                  <p>
+                    By feeding data into a single master database, an ERP eliminates "data silos" (where one department is unaware of the logs in another). For example, as soon as a customer completes checkout in E-Commerce:
+                  </p>
+                  <ul>
+                    <li><i class="fa-solid fa-angle-right"></i> The Inventory module immediately decrements stock and updates the online channel.</li>
+                    <li><i class="fa-solid fa-angle-right"></i> The CRM generates a sales order and updates their transaction history.</li>
+                    <li><i class="fa-solid fa-angle-right"></i> The Finance module generates accounts receivable entries and updates the General Ledger.</li>
+                  </ul>
+                </div>
+                
+                <div class="doc-section filterable-section" data-keywords="security boundaries supply chain finance purchasing approvals authorization role segregation">
+                  <h4>2. Key ERP System Boundaries</h4>
+                  <p>
+                    ERP systems partition permissions and operations into strict boundaries to prevent critical security errors:
+                  </p>
+                  <ul>
+                    <li><i class="fa-solid fa-angle-right"></i> <strong>Supply Chain vs. Finance</strong>: While operators manage stock transactions, only accounting personnel can modify financial records or approve invoice payouts.</li>
+                    <li><i class="fa-solid fa-angle-right"></i> <strong>Purchasing vs. Approvals</strong>: Employees request goods via a Requisition, but a separate manager role must approve it before a Purchase Order is dispatched to a supplier. This dual-authorization prevents unauthorized expenditures.</li>
+                  </ul>
                 </div>
               </div>
             </div>
+            
+            <!-- Docs Panel 2: Process Walks -->
+            <div id="doc-processes" class="doc-panel search-filterable">
+              <div class="glass-card doc-article">
+                <div class="doc-section filterable-section" data-keywords="procurement po purchase order requisition manager approval dock stock-in 3-way match invoice accounts payable general ledger">
+                  <h4>Procurement & Supplier Inbound Lifecycle</h4>
+                  <p>
+                    The procurement pipeline coordinates material acquisitions:
+                  </p>
+                  <ul>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>PR Initiation</strong>: The department submits a Purchase Requisition.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Approval Gate</strong>: The Department Manager verifies budgets and signs off.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>PO Dispatched</strong>: A formal Purchase Order (PO) detailing products and unit costs is generated and dispatched to the supplier.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Dock Stock-in</strong>: Upon delivery, Warehouse Operators verify the SKUs, log quantities in the target zone, and write a 'Stock-in' log.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>3-Way Match Verification</strong>: The Accountant receives the Supplier Invoice and verifies it against the PO and the Dock Receipt. If matching, payment is released and logged in the General Ledger.</li>
+                  </ul>
+                </div>
+                
+                <div class="doc-section filterable-section" data-keywords="sales order crm quotation customer profile stock check warehouse operator fulfillment billing invoice accounts receivable general ledger">
+                  <h4>Sales Fulfillment & Customer Outbound Lifecycle</h4>
+                  <p>
+                    The customer fulfillment loop ensures rapid dispatch and billing integrity:
+                  </p>
+                  <ul>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>CRM Quote</strong>: Sales Reps query the customer profile, apply discount matrices, and issue a Quotation.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Order Creation</strong>: Once confirmed, a Sales Order is created with payment terms.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Stock Check</strong>: The system queries the inventory levels. If stock is available, it routes the order to the warehouse. If out of stock, the order is flagged 'On Hold' and triggers a Procurement request.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>WMS Stock-out</strong>: Operators retrieve the items, package them, decrement inventory locations, and log a 'Stock-out' transaction.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Invoicing & Receivable</strong>: The finance team creates a customer invoice. When payment arrives, accounts receivable is reconciled, and the General Ledger is updated.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Docs Panel 3: Database Schema Guide -->
+            <div id="doc-database" class="doc-panel search-filterable">
+              <div class="glass-card doc-article">
+                <div class="doc-section filterable-section" data-keywords="database schema dictionary tables primary key foreign keys roles users permission product suppliers warehouses locations ledger AP AR">
+                  <h4>Database Architecture Overview</h4>
+                  <p>
+                    AmbatuGrow uses a highly normalized relational database layout to guarantee transactional integrity (ACID compliance) and prevent data duplication. Below is the updated data dictionary reflecting the official tables and RBAC entities.
+                  </p>
+                  <div class="doc-table-container">
+                    <table class="doc-table">
+                      <thead>
+                        <tr>
+                          <th>Table Name</th>
+                          <th>Domain Layer</th>
+                          <th>Primary Key</th>
+                          <th>Foreign Keys & Constraints</th>
+                          <th>Operational Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong>Roles</strong></td>
+                          <td>Core Master Data</td>
+                          <td>role_id</td>
+                          <td>-</td>
+                          <td>Stores security clearance names and definitions.</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Users</strong></td>
+                          <td>Core Master Data</td>
+                          <td>user_id</td>
+                          <td>role_id</td>
+                          <td>Stores credential logins and link back to their Role.</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Permissions</strong></td>
+                          <td>RBAC (Security)</td>
+                          <td>permission_id</td>
+                          <td>-</td>
+                          <td>Lists all valid atomic actions across all modules.</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Role_Permissions</strong></td>
+                          <td>RBAC (Security)</td>
+                          <td>role_id, permission_id</td>
+                          <td>role_id, permission_id</td>
+                          <td>Junction table mapping actions to specific clearance roles.</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Addresses</strong></td>
+                          <td>Core Master Data</td>
+                          <td>address_id</td>
+                          <td>-</td>
+                          <td>Centralized addresses for warehouses, suppliers, customers.</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Products</strong></td>
+                          <td>PIM / WMS</td>
+                          <td>product_id</td>
+                          <td>category_id, uom_id, currency_id</td>
+                          <td>Stores active SKU specifications and pricing metadata.</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Inventory_Locations</strong></td>
+                          <td>PIM / WMS</td>
+                          <td>inventory_id</td>
+                          <td>product_id, warehouse_id, zone_id</td>
+                          <td>Quantifies items physically located in warehouse zones.</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Product_Suppliers</strong></td>
+                          <td>Procurement</td>
+                          <td>product_id, supplier_id</td>
+                          <td>product_id, supplier_id</td>
+                          <td>Junction catalog mapping items to suppliers with custom costs.</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Purchase_Orders</strong></td>
+                          <td>Procurement</td>
+                          <td>po_id</td>
+                          <td>supplier_id, payment_term_id, currency_id, created_by</td>
+                          <td>Outbound purchasing agreements sent to external vendors.</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Sales_Orders</strong></td>
+                          <td>CRM</td>
+                          <td>order_id</td>
+                          <td>customer_id, rep_id, payment_term_id, currency_id</td>
+                          <td>Inbound client purchase agreements.</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Tickets</strong></td>
+                          <td>Helpdesk</td>
+                          <td>ticket_id</td>
+                          <td>customer_id, order_id</td>
+                          <td>Incident tickets for post-sale support or inquiries.</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Shipments</strong></td>
+                          <td>Logistics</td>
+                          <td>shipment_id</td>
+                          <td>destination_address_id</td>
+                          <td>Tracks in-transit or outbound logistics shipments.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Docs Panel 4: Helpdesk & FAQs (Integrated Here) -->
+            <div id="doc-faq" class="doc-panel">
+              
+              <!-- Category Pills -->
+              <div class="faq-filters">
+                <button class="filter-btn active" data-category="all">All Categories</button>
+                <button class="filter-btn" data-category="procurement">Procurement</button>
+                <button class="filter-btn" data-category="inventory">Inventory & WMS</button>
+                <button class="filter-btn" data-category="sales">Sales & CRM</button>
+                <button class="filter-btn" data-category="helpdesk">Helpdesk & SLA</button>
+                <button class="filter-btn" data-category="finance">Finance</button>
+                <button class="filter-btn" data-category="ecommerce">E-Commerce</button>
+                <button class="filter-btn" data-category="projects">Projects</button>
+                <button class="filter-btn" data-category="hr">Human Resources</button>
+              </div>
+              
+              <!-- Accordion Cards Container -->
+              <div class="faq-accordion" id="faq-accordion-container">
+                <!-- Rendered Dynamically via JS -->
+              </div>
+            </div>
+            
           </div>
         </section>
         
@@ -404,79 +465,6 @@
               </div>
             </div>
             
-          </div>
-        </section>
-        
-        <!-- View 5: Helpdesk & FAQ Portal -->
-        <section id="faq-view" class="view-section">
-          
-          <!-- Search Bar -->
-          <div class="faq-search-bar">
-            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" id="faq-search-input" placeholder="Search self-service articles or FAQs (e.g., '3-way match', 'reorder', 'hold')...">
-            <button class="clear-btn" id="clear-search-btn"><i class="fa-solid fa-xmark"></i></button>
-          </div>
-          
-          <!-- Category Pills -->
-          <div class="faq-filters">
-            <button class="filter-btn active" data-category="all">All Categories</button>
-            <button class="filter-btn" data-category="procurement">Procurement</button>
-            <button class="filter-btn" data-category="inventory">Inventory & WMS</button>
-            <button class="filter-btn" data-category="sales">Sales & CRM</button>
-            <button class="filter-btn" data-category="helpdesk">Helpdesk & SLA</button>
-            <button class="filter-btn" data-category="finance">Finance</button>
-            <button class="filter-btn" data-category="ecommerce">E-Commerce</button>
-            <button class="filter-btn" data-category="projects">Projects</button>
-            <button class="filter-btn" data-category="hr">Human Resources</button>
-          </div>
-          
-          <!-- Accordion Cards Container -->
-          <div class="faq-accordion" id="faq-accordion-container">
-            <!-- Rendered Dynamically via JS -->
-          </div>
-        </section>
-        
-        <!-- View 6: Vercel Deployment -->
-        <section id="deployment-view" class="view-section">
-          <div class="glass-card">
-            <div class="card-title-container">
-              <i class="fa-solid fa-cloud-arrow-up"></i>
-              <h3>Deploying to Vercel in Seconds</h3>
-            </div>
-            <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px;">
-              Because this interactive portal is a static single-page application built on standard HTML, CSS, and Vanilla JavaScript, it requires zero server-side builds or complex configurations. You can host it globally on Vercel for free using the following deployment guidelines.
-            </p>
-            
-            <div class="step-card">
-              <div class="step-number">1</div>
-              <div class="step-content">
-                <h4>Verify the Code on GitHub</h4>
-                <p>Ensure that all changes have been pushed to the remote repository. Since Vercel integrates directly with GitHub, it will watch your branches and compile the page on every single commit.</p>
-                <div class="code-block-container">
-                  <div class="code-block-header">
-                    <span>Repository URL</span>
-                    <span>HTTPS</span>
-                  </div>
-                  <pre>https://github.com/CardboardB0X/AmbatuGrow-RBAC.git</pre>
-                </div>
-              </div>
-            </div>
-            
-            <div class="step-card">
-              <div class="step-number">2</div>
-              <div class="step-content">
-                <h4>Sign In to Vercel and Import</h4>
-                <p>Navigate to <a href="https://vercel.com" target="_blank" style="color: var(--accent-glow);">vercel.com</a>, sign in using your GitHub account, and click the <strong>Add New Project</strong> button. Search for the <code>AmbatuGrow-RBAC</code> repository and click <strong>Import</strong>.</p>
-              </div>
-            </div>
-            
-            <div class="step-card">
-              <div class="step-number">3</div>
-              <div class="step-content">
-                <h4>Configure Settings & Deploy</h4>
-                <p>Since the project is a static site with <code>index.html</code> in the root directory, Vercel will auto-detect the configuration. Leave all settings at their default values and click <strong>Deploy</strong>. Your site will be live on a custom <code>.vercel.app</code> domain within 15 seconds!</p>
-              </div>
-            </div>
           </div>
         </section>
         

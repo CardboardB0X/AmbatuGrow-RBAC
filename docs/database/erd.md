@@ -1,246 +1,260 @@
 # 🗄️ Database Entity Relationship Diagram (ERD)
 
-This document outlines the database architecture for the AmbatuGrow ERP system. It illustrates table relationships, primary keys, foreign keys, and crucial operational attributes.
+This document outlines the database architecture for the AmbatuGrow ERP system. It illustrates table relationships, primary keys, foreign keys, and crucial operational attributes, incorporating the database-backed Role-Based Access Control (RBAC) security tables.
 
 ---
 
 ## 🗺️ Entity Relationship Map
 
-The following Mermaid diagram maps the database relationships across modules.
+The following Mermaid diagram maps the database relationships across modules. It showcases the new RBAC structure (`Permissions` and `Role_Permissions`) alongside the core ERP schema tables.
 
 ```mermaid
 erDiagram
-    USERS ||--o{ USER_ROLES : holds
-    ROLES ||--o{ USER_ROLES : has
+    USERS ||--|| ROLES : belongs_to
+    ROLES ||--o{ ROLE_PERMISSIONS : maps
+    PERMISSIONS ||--o{ ROLE_PERMISSIONS : maps
     
-    PRODUCTS ||--o{ PRODUCT_SUPPLIERS : has
-    SUPPLIERS ||--o{ PRODUCT_SUPPLIERS : references
+    USERS ||--o{ PURCHASE_ORDERS : creates
+    
+    ADDRESSES ||--o{ WAREHOUSES : locates
+    ADDRESSES ||--o{ SUPPLIERS : locates
+    ADDRESSES ||--o{ CUSTOMERS : locates
+    ADDRESSES ||--o{ BILLING_DETAILS : locates
+    ADDRESSES ||--o{ SHIPMENTS : locates
+    
+    CURRENCIES ||--o{ PRODUCTS : rates
+    CURRENCIES ||--o{ PURCHASE_ORDERS : rates
+    CURRENCIES ||--o{ SALES_ORDERS : rates
+    
+    UNITS_OF_MEASURE ||--o{ PRODUCTS : measures
+    UNITS_OF_MEASURE ||--o{ PO_ITEMS : measures
+    
+    PAYMENT_TERMS ||--o{ PURCHASE_ORDERS : applies_to
+    PAYMENT_TERMS ||--o{ SALES_ORDERS : applies_to
+    
+    CATEGORIES ||--o{ CATEGORIES : parent_child
     CATEGORIES ||--o{ PRODUCTS : categorizes
     
-    PRODUCTS ||--o{ INVENTORY_LOCATIONS : stores
-    PRODUCTS ||--o{ STOCK_TRANSACTIONS : logs
-    INVENTORY_LOCATIONS ||--o{ STOCK_TRANSACTIONS : source_node
-    INVENTORY_LOCATIONS ||--o{ STOCK_TRANSACTIONS : destination_node
+    PRODUCTS ||--o{ PRODUCT_SUPPLIERS : junction
+    SUPPLIERS ||--o{ PRODUCT_SUPPLIERS : junction
     
-    PURCHASE_REQUISITIONS ||--o{ PURCHASE_ORDERS : fulfills
-    USERS ||--o{ PURCHASE_REQUISITIONS : requests
-    SUPPLIERS ||--o{ PURCHASE_ORDERS : supplies
+    PRODUCTS ||--o{ INVENTORY_LOCATIONS : stores
+    WAREHOUSES ||--o{ INVENTORY_LOCATIONS : stores
+    WAREHOUSE_ZONES ||--o{ INVENTORY_LOCATIONS : stores
+    WAREHOUSES ||--o{ WAREHOUSE_ZONES : contains
+    
+    PRODUCTS ||--o{ STOCK_TRANSACTIONS : logs
+    WAREHOUSES ||--o{ STOCK_TRANSACTIONS : logs
+    
     PURCHASE_ORDERS ||--o{ PO_ITEMS : contains
     PRODUCTS ||--o{ PO_ITEMS : details
+    SUPPLIERS ||--o{ PURCHASE_ORDERS : supplies
+    SUPPLIERS ||--o{ SUPPLIER_INVOICES : bills
+    PURCHASE_ORDERS ||--o{ SUPPLIER_INVOICES : bills
     
     CUSTOMERS ||--o{ SALES_ORDERS : places
-    SALES_ORDERS ||--o{ ORDER_ITEMS : contains
-    PRODUCTS ||--o{ ORDER_ITEMS : details
-    
-    SALES_ORDERS ||--o{ SHIPMENTS : logs_delivery
-    PURCHASE_ORDERS ||--o{ SHIPMENTS : logs_receipt
-    
     CUSTOMERS ||--o{ TICKETS : logs
     SALES_ORDERS ||--o{ TICKETS : references
-    USERS ||--o{ TICKETS : assigned_to
+    SALES_ORDERS ||--o{ BILLING_DETAILS : bills
     
-    PURCHASE_ORDERS ||--o{ ACCOUNTS_PAYABLE : invoices
-    SALES_ORDERS ||--o{ ACCOUNTS_RECEIVABLE : invoices
-    
-    ACCOUNTS_PAYABLE ||--o{ GENERAL_LEDGER : records
-    ACCOUNTS_RECEIVABLE ||--o{ GENERAL_LEDGER : records
+    SHIPMENTS ||--|| SALES_ORDERS : delivers_outbound
+    SHIPMENTS ||--|| PURCHASE_ORDERS : receives_inbound
 ```
 
 ---
 
 ## 📋 Data Dictionary & Table Definitions
 
-### 1. Identity & Access Control
-* **`USERS`**: System user records linked to departments.
-* **`ROLES`**: Defined roles (e.g., WMS Manager, Accountant, Procurement Specialist).
-* **`USER_ROLES`**: Many-to-many join table mapping users to roles.
+### 1. Core & Master Data
 
-### 2. Inventory & WMS
-* **`PRODUCTS`**: Core catalog listing SKUs, unit costs, pricing, and reorder thresholds.
-* **`CATEGORIES`**: Product grouping (e.g., Electronics, Raw Materials).
-* **`INVENTORY_LOCATIONS`**: Physical warehouse bin positions, storing item balances.
-* **`STOCK_TRANSACTIONS`**: Logs of physical stock changes (`stock-in`, `stock-out`, `transfer`).
+#### `Roles`
+* **`role_id`** (INT, PK): Unique identifier for each role.
+* **`role_name`** (VARCHAR(50)): Name of the security role.
+* **`description`** (TEXT): Operational description of duties.
 
-### 3. Purchasing & Suppliers
-* **`SUPPLIERS`**: Supplier directories, contract terms, and ratings.
-* **`PRODUCT_SUPPLIERS`**: Cross-references mapping preferred vendors and costs to SKUs.
-* **`PURCHASE_REQUISITIONS`**: Employee requests for purchasing.
-* **`PURCHASE_ORDERS`**: Outbound vendor orders.
-* **`PO_ITEMS`**: Detailed lists of items, unit costs, and quantities in a PO.
+#### `Users`
+* **`user_id`** (INT, PK): Unique identifier for each user.
+* **`username`** (VARCHAR(50)): System username.
+* **`password_hash`** (VARCHAR(255)): Secure password hash.
+* **`email`** (VARCHAR(100)): Primary contact email.
+* **`role_id`** (INT, FK -> `Roles`): Link to security role.
+* **`status`** (ENUM('Active', 'Inactive', 'Suspended')): User status.
 
-### 4. Sales & CRM
-* **`CUSTOMERS`**: Customer profiles, delivery addresses, and payment terms.
-* **`SALES_ORDERS`**: Customer orders containing invoicing details.
-* **`ORDER_ITEMS`**: Specific items, pricing, and quantities for sales orders.
+#### `Permissions` [NEW RBAC Table]
+* **`permission_id`** (INT, PK): Unique identifier for each permission.
+* **`permission_name`** (VARCHAR(100), UNIQUE): Name of permission (e.g. `CREATE_PURCHASE_ORDER`).
+* **`module_name`** (VARCHAR(50)): Associated ERP module.
+* **`description`** (TEXT): Context of what action this allows.
 
-### 5. Helpdesk & Logistics
-* **`SHIPMENTS`**: Inbound or outbound logistical records tracking carrier information.
-* **`TICKETS`**: Support incident logs, tracking resolution deadlines based on SLA rules.
+#### `Role_Permissions` [NEW RBAC Table]
+* **`role_id`** (INT, FK -> `Roles` / Composite PK): Associated role.
+* **`permission_id`** (INT, FK -> `Permissions` / Composite PK): Permitted action.
 
-### 6. Finance & Accounting
-* **`ACCOUNTS_PAYABLE`**: Supplier invoices matching POs, held for verification.
-* **`ACCOUNTS_RECEIVABLE`**: Customer invoices compiled from orders.
-* **`GENERAL_LEDGER`**: Central ledger storing double-entry credits and debits.
+#### `Addresses`
+* **`address_id`** (INT, PK): Unique identifier.
+* **`street`** (VARCHAR(255)): Street details.
+* **`city`** (VARCHAR(100)): City.
+* **`province`** (VARCHAR(100)): State/Province.
+* **`zipcode`** (VARCHAR(20)): Postal code.
+* **`country`** (VARCHAR(100)): Country name.
+
+#### `Units_of_Measure`
+* **`uom_id`** (INT, PK): Unique identifier.
+* **`uom_code`** (VARCHAR(10)): Short acronym (e.g., `PCS`, `KG`).
+* **`uom_name`** (VARCHAR(50)): Full title.
+* **`description`** (TEXT): Context parameters.
+
+#### `Payment_Terms`
+* **`payment_term_id`** (INT, PK): Unique identifier.
+* **`term_code`** (VARCHAR(20)): Term abbreviation (e.g. `NET30`).
+* **`description`** (TEXT): Detailed payment timeline details.
+* **`net_days`** (INT): Total days allowed for settlement.
+* **`discount_percent`** (DECIMAL(5,2)): Percentage discount if paid early.
+
+#### `Currencies`
+* **`currency_id`** (INT, PK): Unique identifier.
+* **`currency_code`** (CHAR(3)): Standard ISO code (e.g. `USD`, `PHP`).
+* **`currency_name`** (VARCHAR(50)): Currency title.
+* **`exchange_rate`** (DECIMAL(10,4)): Multiplier relative to base company currency.
 
 ---
 
-## 🛠️ Table Specifications (SQL Data Types)
+### 2. Product & Inventory Management (PIM / WMS)
 
-```mermaid
-erDiagram
-    USERS {
-        int id PK
-        string username
-        string email
-        string password
-        int department_id FK
-    }
-    ROLES {
-        int id PK
-        string role_name
-        string description
-    }
-    USER_ROLES {
-        int user_id PK, FK
-        int role_id PK, FK
-    }
-    PRODUCTS {
-        int id PK
-        string sku UK
-        string name
-        string description
-        int category_id FK
-        decimal price
-        int min_quantity_threshold
-    }
-    CATEGORIES {
-        int id PK
-        string category_name
-        string description
-    }
-    SUPPLIERS {
-        int id PK
-        string name
-        string contact_person
-        string email
-        string phone
-        string contract_terms
-    }
-    PRODUCT_SUPPLIERS {
-        int product_id PK, FK
-        int supplier_id PK, FK
-        decimal cost_price
-        boolean is_preferred
-    }
-    INVENTORY_LOCATIONS {
-        int id PK
-        string warehouse_name
-        string zone_name
-        int product_id FK
-        int quantity
-    }
-    STOCK_TRANSACTIONS {
-        int id PK
-        int product_id FK
-        string transaction_type "stock-in | stock-out | transfer"
-        int source_location_id FK "nullable"
-        int destination_location_id FK "nullable"
-        int quantity
-        timestamp transaction_date
-        string reference_no
-    }
-    PURCHASE_REQUISITIONS {
-        int id PK
-        int employee_id FK
-        int manager_id FK "nullable"
-        string status "pending | approved | rejected"
-        text justification
-        timestamp created_at
-    }
-    PURCHASE_ORDERS {
-        int id PK
-        int requisition_id FK "nullable"
-        int supplier_id FK
-        string status "draft | sent | confirmed | delivered | cancelled"
-        decimal total_amount
-        timestamp ordered_at
-    }
-    PO_ITEMS {
-        int id PK
-        int purchase_order_id FK
-        int product_id FK
-        int quantity
-        decimal unit_cost
-    }
-    CUSTOMERS {
-        int id PK
-        string company_name
-        string contact_name
-        string email
-        string phone
-        text billing_address
-        text shipping_address
-    }
-    SALES_ORDERS {
-        int id PK
-        int customer_id FK
-        string status "draft | pending | processed | shipped | delivered | cancelled"
-        int payment_term_id FK
-        int currency_id FK
-        decimal total_amount
-        timestamp ordered_at
-    }
-    ORDER_ITEMS {
-        int id PK
-        int sales_order_id FK
-        int product_id FK
-        int quantity
-        decimal unit_price
-    }
-    SHIPMENTS {
-        int id PK
-        string shipment_type "inbound | outbound"
-        int reference_id "PO_ID or SO_ID"
-        string carrier_name
-        string tracking_number
-        string status "pending | shipped | transit | delivered"
-        timestamp shipped_at
-        timestamp estimated_delivery
-    }
-    TICKETS {
-        int id PK
-        int customer_id FK
-        int order_id FK "nullable"
-        string priority "low | medium | high"
-        string status "open | in_progress | resolved | closed"
-        int assigned_agent_id FK "nullable"
-        timestamp sla_deadline
-        text description
-    }
-    ACCOUNTS_PAYABLE {
-        int id PK
-        int purchase_order_id FK
-        string invoice_number
-        decimal amount
-        string status "unpaid | partially_paid | paid | disputed"
-        date due_date
-    }
-    ACCOUNTS_RECEIVABLE {
-        int id PK
-        int sales_order_id FK
-        string invoice_number
-        decimal amount
-        string status "unpaid | partially_paid | paid | overdue"
-        date due_date
-    }
-    GENERAL_LEDGER {
-        int id PK
-        date entry_date
-        string account_code
-        string account_name
-        decimal debit
-        decimal credit
-        string reference_no
-        string description
-    }
-```
+#### `Categories`
+* **`category_id`** (INT, PK): Unique identifier.
+* **`category_name`** (VARCHAR(100)): Category title.
+* **`parent_category_id`** (INT, FK -> `Categories`, Nullable): Adjacency list for hierarchies.
+
+#### `Products`
+* **`product_id`** (INT, PK): Unique identifier.
+* **`sku`** (VARCHAR(50), UNIQUE): Stock Keeping Unit string.
+* **`name`** (VARCHAR(255)): Marketing product name.
+* **`description`** (TEXT): Physical product properties.
+* **`category_id`** (INT, FK -> `Categories`): Product category link.
+* **`uom_id`** (INT, FK -> `Units_of_Measure`): Physical unit mapping.
+* **`currency_id`** (INT, FK -> `Currencies`): Default pricing currency.
+* **`base_price`** (DECIMAL(10,2)): Base catalog price.
+* **`min_quantity_threshold`** (DECIMAL(10,2)): Safety limit.
+* **`lead_time_days`** (INT): Vendor lead time estimate.
+
+#### `Warehouses`
+* **`warehouse_id`** (INT, PK): Unique identifier.
+* **`name`** (VARCHAR(100)): Warehouse identifier.
+* **`address_id`** (INT, FK -> `Addresses`): Physical address.
+* **`capacity_sqm`** (DECIMAL(10,2)): Floor space area.
+
+#### `Warehouse_Zones`
+* **`zone_id`** (INT, PK): Unique zone identifier.
+* **`warehouse_id`** (INT, FK -> `Warehouses`): Parent warehouse.
+* **`zone_name`** (VARCHAR(50)): Zone title.
+* **`category`** (VARCHAR(50)): Environmental controls (e.g. `Frozen`, `Bulk`).
+
+#### `Inventory_Locations`
+* **`inventory_id`** (INT, PK): Unique locator ID.
+* **`product_id`** (INT, FK -> `Products`): Stored SKU.
+* **`warehouse_id`** (INT, FK -> `Warehouses`): Target facility.
+* **`zone_id`** (INT, FK -> `Warehouse_Zones`): Target zone inside facility.
+* **`quantity`** (DECIMAL(10,2)): Actual physical count.
+* **`expiration_date`** (DATE, Nullable): Expiry limit.
+
+#### `Stock_Transactions`
+* **`transaction_id`** (INT, PK): Unique tracker.
+* **`product_id`** (INT, FK -> `Products`): Material SKU.
+* **`warehouse_id`** (INT, FK -> `Warehouses`): Facility location.
+* **`transaction_type`** (ENUM('Stock-in', 'Stock-out', 'Transfer')): Direction.
+* **`quantity`** (DECIMAL(10,2)): Movement change amount.
+* **`transaction_date`** (DATETIME): Timestamp.
+* **`reference_id`** (INT, FK -> Polymorphic): Linking POs, Sales Orders, or Transfer IDs.
+
+---
+
+### 3. Procurement & Supply Chain (SCM)
+
+#### `Suppliers`
+* **`supplier_id`** (INT, PK): Unique supplier ID.
+* **`supplier_name`** (VARCHAR(255)): Registered vendor name.
+* **`category`** (VARCHAR(100)): Supply vertical (e.g. `Hardware`, `Logistics`).
+* **`email`** (VARCHAR(100)): Primary PO inbox.
+* **`phone`** (VARCHAR(20)): Phone number.
+* **`address_id`** (INT, FK -> `Addresses`): Corporate address.
+* **`status`** (ENUM('Active', 'Inactive', 'Blacklisted')): Vendor standing.
+
+#### `Product_Suppliers` (4NF Junction Table)
+* **`product_id`** (INT, FK / Composite PK): Product link.
+* **`supplier_id`** (INT, FK / Composite PK): Supplier link.
+* **`supplier_sku`** (VARCHAR(50)): Supplier's SKU code.
+* **`unit_price`** (DECIMAL(10,2)): Supplier wholesale cost.
+* **`lead_time_days`** (INT): Dispatch timeframe.
+* **`is_preferred`** (TINYINT(1)): Priority procurement marker.
+
+#### `Purchase_Orders`
+* **`po_id`** (INT, PK): Unique PO ID.
+* **`po_number`** (VARCHAR(50), UNIQUE): Alphanumeric document identifier.
+* **`supplier_id`** (INT, FK -> `Suppliers`): Target vendor.
+* **`requisition_id`** (INT, FK, Nullable): Reference link to source PR.
+* **`payment_term_id`** (INT, FK -> `Payment_Terms`): PO payment terms.
+* **`currency_id`** (INT, FK -> `Currencies`): Settled currency.
+* **`status`** (VARCHAR(50)): Order status (e.g. `Sent`, `Confirmed`).
+* **`order_date`** (DATETIME): Order timestamp.
+* **`created_by`** (INT, FK -> `Users`): Specialist creator.
+
+#### `PO_Items`
+* **`po_item_id`** (INT, PK): Line item PK.
+* **`po_id`** (INT, FK -> `Purchase_Orders`): Parent order.
+* **`product_id`** (INT, FK -> `Products`): Purchased SKU.
+* **`quantity`** (DECIMAL(10,2)): Requested count.
+* **`uom_id`** (INT, FK -> `Units_of_Measure`): Physical unit mapping.
+* **`unit_price`** (DECIMAL(10,2)): Locked contract cost.
+
+#### `Supplier_Invoices`
+* **`invoice_id`** (INT, PK): Invoice PK.
+* **`supplier_id`** (INT, FK -> `Suppliers`): Billing vendor.
+* **`po_id`** (INT, FK -> `Purchase_Orders`): Linked purchase order.
+* **`invoice_number`** (VARCHAR(100)): Vendor's reference code.
+* **`invoice_date`** (DATE): Billing issue date.
+* **`due_date`** (DATE): Net terms deadline date.
+
+---
+
+### 4. Sales & Customer Management (CRM)
+
+#### `Customers`
+* **`customer_id`** (INT, PK): Customer PK.
+* **`first_name`** (VARCHAR(100)): First name.
+* **`last_name`** (VARCHAR(100)): Last name.
+* **`email`** (VARCHAR(100)): Billing email.
+* **`phone`** (VARCHAR(20)): Phone.
+* **`address_id`** (INT, FK -> `Addresses`): Customer delivery location.
+
+#### `Sales_Orders`
+* **`order_id`** (INT, PK): Sales Order PK.
+* **`customer_id`** (INT, FK -> `Customers`): Requesting customer.
+* **`rep_id`** (INT, FK -> `Sales_Representatives`): Handling agent.
+* **`order_date`** (DATETIME): Timestamp.
+* **`status`** (VARCHAR(50)): Order progress status.
+* **`payment_term_id`** (INT, FK -> `Payment_Terms`): CRM payment terms.
+* **`currency_id`** (INT, FK -> `Currencies`): Quoted currency.
+
+#### `Billing_Details`
+* **`billing_id`** (INT, PK): Billing record.
+* **`order_id`** (INT, FK -> `Sales_Orders`): Sales order.
+* **`address_id`** (INT, FK -> `Addresses`): Invoice destination address.
+* **`payment_method`** (VARCHAR(50)): Method (e.g. `Credit Card`, `Bank Transfer`).
+
+---
+
+### 5. Helpdesk & Logistics
+
+#### `Tickets`
+* **`ticket_id`** (INT, PK): Support Ticket PK.
+* **`customer_id`** (INT, FK -> `Customers`): Ticket creator.
+* **`order_id`** (INT, FK, Nullable): Associated purchase order reference.
+* **`subject`** (VARCHAR(255)): Ticket summary.
+* **`priority`** (ENUM('Low', 'Medium', 'High', 'Critical')): Ticket urgency.
+
+#### `Shipments`
+* **`shipment_id`** (INT, PK): Shipment identifier.
+* **`reference_type`** (ENUM('Inbound', 'Outbound')): Transit type.
+* **`reference_id`** (INT, FK -> Polymorphic): Links to `po_id` (inbound) or `order_id` (outbound).
+* **`destination_address_id`** (INT, FK -> `Addresses`): Shipping address.

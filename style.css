@@ -389,7 +389,7 @@ body {
 }
 
 /* ==========================================================================
-   4. View: Flowcharts & Blueprints
+   4. View: Flowcharts & Blueprints (Scalable Pan & Zoom)
    ========================================================================== */
 
 .flow-tabs-bar {
@@ -424,43 +424,116 @@ body {
 }
 
 .diagram-viewer-card {
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  overflow: auto;
+  padding: 0; /* Remove padding to maximize canvas space */
+  min-height: 520px;
+  height: 65vh;
+  position: relative;
+  overflow: hidden;
+  background-color: #0b0f19;
+}
+
+#diagram-canvas-wrapper {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  cursor: grab;
+  user-select: none;
+}
+
+#diagram-canvas-wrapper:active {
+  cursor: grabbing;
 }
 
 #mermaid-container {
   width: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
-  overflow-x: auto;
+  align-items: center;
+  transform-origin: center center;
+  transition: transform 0.1s ease-out;
 }
 
-.loading-spinner {
+#mermaid-container svg {
+  width: auto !important;
+  height: auto !important;
+  max-width: 90% !important;
+  max-height: 90% !important;
+  pointer-events: none; /* Let the wrapper handle mouse events */
+}
+
+/* Float Controls Overlay */
+.diagram-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+  align-items: flex-end;
+}
+
+.diagram-controls button {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  color: var(--text-muted);
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
-.loading-spinner i {
+.diagram-controls button:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-glow);
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.drag-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  margin-top: 4px;
+}
+
+.drag-hint i {
   color: var(--accent-primary);
-  font-size: 20px;
 }
 
 /* ==========================================================================
-   5. View: Documentation
+   5. View: Documentation Center (Integrated FAQs & Search)
    ========================================================================== */
+
+.docs-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+  margin-bottom: 24px;
+  gap: 20px;
+}
 
 .docs-subtabs {
   display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 10px;
 }
 
 .doc-tab {
@@ -477,6 +550,7 @@ body {
 
 .doc-tab:hover {
   color: var(--text-main);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .doc-tab.active {
@@ -484,6 +558,57 @@ body {
   color: var(--text-inverse);
   font-weight: 600;
   border-color: var(--accent-primary);
+}
+
+/* Docs Integrated Search Bar */
+.docs-search-bar {
+  display: flex;
+  align-items: center;
+  background-color: rgba(15, 23, 42, 0.85);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 14px;
+  gap: 10px;
+  position: relative;
+  transition: border-color 0.3s ease;
+  width: 100%;
+  max-width: 320px;
+}
+
+.docs-search-bar:focus-within {
+  border-color: var(--accent-primary);
+}
+
+.docs-search-bar i.search-icon {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.docs-search-bar input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-main);
+  font-family: var(--font-primary);
+  font-size: 13px;
+  flex-grow: 1;
+}
+
+.docs-search-bar input::placeholder {
+  color: var(--text-muted);
+}
+
+.clear-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  display: none;
+}
+
+.clear-btn:hover {
+  color: var(--text-main);
 }
 
 .doc-panel {
@@ -503,11 +628,16 @@ body {
 .doc-section {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 24px;
+  transition: opacity 0.3s ease;
 }
 
 .doc-section:last-child {
   border-bottom: none;
   padding-bottom: 0;
+}
+
+.doc-section.hidden-section {
+  display: none;
 }
 
 .doc-section h4 {
@@ -580,219 +710,16 @@ body {
   background-color: rgba(255, 255, 255, 0.01);
 }
 
-/* ==========================================================================
-   6. View: RBAC Simulator
-   ========================================================================== */
-
-.rbac-selector-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 24px;
-}
-
-.rbac-selector-panel label {
-  font-size: 12px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.custom-select {
-  padding: 12px 18px;
-  border-radius: 10px;
-  background-color: #0f172a;
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  font-family: var(--font-primary);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  outline: none;
-  transition: border-color 0.3s ease;
-  width: 100%;
-  max-width: 320px;
-}
-
-.custom-select:focus {
-  border-color: var(--accent-primary);
-}
-
-.rbac-display-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  gap: 24px;
-}
-
-.rbac-info-card {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.rbac-info-card h4 {
-  font-family: var(--font-headings);
-  font-size: 20px;
-  color: var(--accent-glow);
-}
-
-.rbac-info-card p {
-  font-size: 14px;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-
-.rbac-duties-box h5 {
-  font-size: 13px;
-  color: var(--text-main);
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.rbac-duties-box ul {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.rbac-duties-box ul li {
-  font-size: 13px;
-  color: var(--text-muted);
-  display: flex;
-  gap: 10px;
-  line-height: 1.4;
-}
-
-.rbac-duties-box ul li i {
-  color: var(--color-success);
-  margin-top: 3px;
-}
-
-.permissions-matrix-card h4 {
-  font-family: var(--font-headings);
-  font-size: 16px;
-  margin-bottom: 16px;
-}
-
-.permissions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-.permission-grid-item {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 12px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.3s ease;
-}
-
-.permission-grid-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(99, 102, 241, 0.15);
-}
-
-.permission-grid-item .module-name {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-muted);
-}
-
-.perm-badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.badge-full {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: var(--color-danger);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-.badge-rw {
-  background-color: rgba(245, 158, 11, 0.1);
-  color: var(--color-warning);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-}
-
-.badge-r {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: var(--color-success);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.badge-none {
-  background-color: rgba(255, 255, 255, 0.03);
-  color: var(--text-muted);
-  border: 1px solid var(--border-color);
-}
-
-/* ==========================================================================
-   7. View: FAQ Self-Service
-   ========================================================================== */
-
-.faq-search-bar {
-  display: flex;
-  align-items: center;
-  background-color: rgba(15, 23, 42, 0.8);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 10px 18px;
-  margin-bottom: 24px;
-  gap: 12px;
-  position: relative;
-  transition: border-color 0.3s ease;
-}
-
-.faq-search-bar:focus-within {
-  border-color: var(--accent-primary);
-}
-
-.faq-search-bar i.search-icon {
-  color: var(--text-muted);
-  font-size: 16px;
-}
-
-.faq-search-bar input {
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--text-main);
-  font-family: var(--font-primary);
-  font-size: 14px;
-  flex-grow: 1;
-}
-
-.faq-search-bar input::placeholder {
-  color: var(--text-muted);
-}
-
-.clear-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 14px;
-  display: none;
-}
-
-.clear-btn:hover {
-  color: var(--text-main);
-}
-
+/* FAQ Filters & Layout (Inside Documentation Center) */
 .faq-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.01);
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
 }
 
 .filter-btn {
@@ -819,7 +746,6 @@ body {
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
-/* FAQ Cards & Accordion */
 .faq-accordion {
   display: flex;
   flex-direction: column;
@@ -947,76 +873,165 @@ body {
 }
 
 /* ==========================================================================
-   8. View: Deployment Guide
+   6. View: RBAC Simulator (Explicit Wording Matrix)
    ========================================================================== */
 
-.code-block-container {
-  position: relative;
-  background-color: #0b0f19;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  margin: 16px 0;
-  overflow: hidden;
-}
-
-.code-block-header {
-  padding: 8px 16px;
-  background-color: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid var(--border-color);
+.rbac-selector-panel {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.code-block-container pre {
-  padding: 16px;
-  overflow-x: auto;
-  font-family: monospace;
-  font-size: 12px;
-  color: #a5b4fc;
-}
-
-.step-card {
-  display: flex;
-  gap: 20px;
+  flex-direction: column;
+  gap: 10px;
   margin-bottom: 24px;
 }
 
-.step-number {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: rgba(99, 102, 241, 0.1);
-  border: 1px solid var(--border-highlight);
-  color: var(--accent-glow);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.rbac-selector-panel label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.custom-select {
+  padding: 12px 18px;
+  border-radius: 10px;
+  background-color: #0f172a;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-family: var(--font-primary);
   font-size: 14px;
-  font-weight: 700;
-  flex-shrink: 0;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.3s ease;
+  width: 100%;
+  max-width: 320px;
 }
 
-.step-content {
-  flex-grow: 1;
+.custom-select:focus {
+  border-color: var(--accent-primary);
 }
 
-.step-content h4 {
+.rbac-display-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 24px;
+}
+
+.rbac-info-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.rbac-info-card h4 {
   font-family: var(--font-headings);
-  font-size: 15px;
-  margin-bottom: 6px;
+  font-size: 20px;
+  color: var(--accent-glow);
 }
 
-.step-content p {
+.rbac-info-card p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.rbac-duties-box h5 {
+  font-size: 13px;
+  color: var(--text-main);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rbac-duties-box ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rbac-duties-box ul li {
   font-size: 13px;
   color: var(--text-muted);
-  line-height: 1.5;
+  display: flex;
+  gap: 10px;
+  line-height: 1.4;
+}
+
+.rbac-duties-box ul li i {
+  color: var(--color-success);
+  margin-top: 3px;
+}
+
+.permissions-matrix-card h4 {
+  font-family: var(--font-headings);
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.permission-grid-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.permission-grid-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(99, 102, 241, 0.15);
+}
+
+.permission-grid-item .module-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.perm-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-align: center;
+  width: auto;
+}
+
+.badge-full {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badge-rw {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.badge-r {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge-none {
+  background-color: rgba(255, 255, 255, 0.03);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
 }
 
 /* ==========================================================================
-   9. Responsive Design
+   7. Responsive Design
    ========================================================================== */
 
 @media (max-width: 900px) {
@@ -1063,5 +1078,15 @@ body {
 
   .rbac-display-grid {
     grid-template-columns: 1fr;
+  }
+
+  .docs-header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .docs-search-bar {
+    max-width: 100%;
   }
 }

@@ -1,6 +1,5 @@
 # 🏢 AmbatuGrow ERP - System Architecture & Security Blueprints
 
-[![Vercel Deployment](https://img.shields.io/badge/deploy-vercel-blueviolet?style=flat-square&logo=vercel)](https://vercel.com)
 [![GitHub License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 
 Welcome to the central system architecture repository for **AmbatuGrow ERP**, a cross-functional Enterprise Resource Planning (ERP) platform developed for Cavite State University (ITEC 75 - System Integration and Architecture II).
@@ -12,26 +11,12 @@ This repository serves as the single source of truth for the system's operationa
 ## 🌐 Interactive HTML Web Dashboard
 
 We have built a premium, responsive **Interactive HTML Dashboard** directly inside this repository. This single-page application (SPA) allows you to:
-* 🔄 **Explore Flowcharts Interactively**: Switch tabs to render the E2E Orchestration map and sub-process lifecycles dynamically using Mermaid.js.
-* 📖 **Read Embedded Documentation**: Access guides explaining ERP concepts, process logic gates, and structural databases.
-* 🔐 **Simulate RBAC Clearance**: Select a role (e.g. Accountant, WMS Operator) to see their operational duties and CRUD permission grid across all 11 ERP modules instantly.
-* 🔍 **Search Self-Service FAQs**: Search FAQs with instant filtering and category tags to answer system questions.
+* 🔄 **Explore Flowcharts with Pan & Zoom**: Renders the E2E Orchestration map and sub-process lifecycles dynamically using Mermaid.js. Supports click-and-drag panning, scroll-wheel zooming, and button scaling overlay.
+* 📖 **Searchable Documentation Center**: Contains structured guides explaining ERP concepts, process logic gates, data dictionaries, and an integrated **Helpdesk & FAQs** search portal.
+* 🔐 **Simulate RBAC Clearance**: Select a role (e.g., Accountant, WMS Operator) to see their operational duties and explicit permission grid (e.g. *Full Access*, *Read & Write*, *Read-Only*, *No Access*) across all 11 ERP modules.
 
-To run it locally:
-1. Open the [index.html](index.html) file directly in any modern browser.
-
----
-
-## ⚡ Vercel Deployment
-
-This project is configured as a static site and is ready to deploy globally on **Vercel** with one click.
-
-### Steps to Deploy:
-1. Go to [Vercel](https://vercel.com) and log in with your GitHub account.
-2. Click **Add New** ➡️ **Project**.
-3. Import the `AmbatuGrow-RBAC` repository.
-4. Leave the build and output settings at their default values (Vercel automatically detects the static HTML project).
-5. Click **Deploy**. Vercel will host the web application on a public `.vercel.app` URL and update it on every commit you push to GitHub!
+### How to Run Locally:
+1. Open the [index.html](index.html) file directly in any modern web browser.
 
 ---
 
@@ -63,7 +48,7 @@ AmbatuGrow is composed of **10 functional modules** designed to run cohesively a
 2. **Procurement & Purchasing**: Governs internal purchase requisitions, supplier catalogs, PO tracking, and 3-way invoice matching.
 3. **Sales & Customer Support Management**: Handles customer profiles, quotations, sales orders, payment terms, and invoicing.
 4. **Supply Chain Management (SCM)**: Manages logistics, demand planning, route optimization, and shipment tracing (inbound/outbound).
-5. **Finance & Accounting**: Centralizes general ledger accounts, accounts payable, accounts receivable, and compliance/tax statements.
+5. **Finance & Accounting**: Centralizes accounts payable, accounts receivable, and the general ledger.
 6. **Customer Service & Helpdesk**: Converts customer inquiries into support tickets, tracking priority levels and enforcing SLA windows.
 7. **E-Commerce Integration**: Synchronizes online storefront catalog, stock quantities, and customer orders directly with the core ERP.
 8. **Project Management**: Enables project scope planning, scheduling, resource allocation, and budget tracking.
@@ -78,5 +63,5 @@ Use the following links to navigate through the raw markdown system blueprints:
 
 * 🌐 **[End-to-End Orchestration Blueprint](docs/blueprints/system_orchestration.md)**: View the horizontal data transitions across the core modules.
 * 🔄 **[Deep-Dive Workflows](docs/blueprints/functional_workflows.md)**: Explore procurement lifecycles, warehouse movements, CRM processing, and support ticket SLAs.
-* 🗄️ **[Database Architecture (ERD)](docs/database/erd.md)**: Inspect the physical database layout, table properties, and foreign-key references.
+* 🗄️ **[Database Architecture (ERD)](docs/database/erd.md)**: Inspect the physical database layout, table properties, and foreign-key references based on the official schema.
 * 🔐 **[Role-Based Access Control (RBAC)](docs/rbac/rbac_model.md)**: Read the access control policies, role-permission matrices, and security diagrams.
