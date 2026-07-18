@@ -270,17 +270,17 @@ const faqData = [
   },
   {
     id: 7,
-    category: "hidden-easter-egg",
+    category: "helpdesk",
     question: "Liah, gets mo na?",
-    answer: "Oo naman, ITEC 75 matches are fully mapped! Double-check the entity-relationship diagrams and RBAC security matrix to make sure. Kaya natin 'to! 💚",
-    tags: ["liah", "gets mo na", "easter egg", "cvsu"]
+    answer: "Oo naman, ITEC 75 matches are fully mapped! Gets na gets na! <br><br><div style='text-align: center;'><img src='https://media.giphy.com/media/Vuw9m5wXviFIQ/giphy.gif' alt='Rickroll' style='max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-height: 250px;'></div>",
+    tags: ["liah", "gets mo na", "easter egg", "cvsu", "rickroll", "gif"]
   },
   {
     id: 8,
-    category: "hidden-easter-egg",
+    category: "helpdesk",
     question: "Emman, kaya pa ba?",
-    answer: "Kakayanin pa! WMS stock locations are locked in, SLAs are running, and database DDL schemas compile perfectly. CVSU IT Dept is ready! 🚀",
-    tags: ["emman", "kaya pa ba", "easter egg", "cvsu"]
+    answer: "Kakayanin pa! WMS stock locations are locked in, SLAs are running, and database DDL schemas compile perfectly. CVSU IT Dept is ready! <br><br><div style='text-align: center;'><img src='https://media.giphy.com/media/10UUe8ZsLnaqwo/giphy.gif' alt='Billy Herrington' style='max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-height: 250px;'></div>",
+    tags: ["emman", "kaya pa ba", "easter egg", "cvsu", "gachimuchi", "billy herrington", "gif"]
   }
 ];
 
@@ -1278,10 +1278,6 @@ function initDocsAndSearchEngine() {
       // Category Pill filter
       if (currentFAQCategory !== 'all') {
         filtered = filtered.filter(f => f.category === currentFAQCategory);
-      } else {
-        if (query === '') {
-          filtered = filtered.filter(f => f.category !== 'hidden-easter-egg');
-        }
       }
 
       // Keyword search
