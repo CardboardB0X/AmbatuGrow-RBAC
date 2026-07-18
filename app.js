@@ -373,7 +373,7 @@ const walkthroughSteps = {
 };
 
 // 6. Flowchart Pan & Zoom Controls Module
-let scale = 1.0;
+let scale = 1.2;
 let panX = 0;
 let panY = 0;
 let isDragging = false;
@@ -450,12 +450,12 @@ function initPanZoomEngine() {
 }
 
 function resetPanZoomState() {
-  scale = 1.0;
+  scale = 1.2;
   panX = 0;
   panY = 0;
   const container = document.getElementById('mermaid-container');
   if (container) {
-    container.style.transform = `translate(0px, 0px) scale(1.0)`;
+    container.style.transform = `translate(0px, 0px) scale(1.2)`;
   }
 }
 
