@@ -116,7 +116,26 @@ const flowcharts = {
     
     H13 --> H14[Update Ticket Status Value = 'Resolved']:::help
     H14 --> H15[Gather User Feedback Metrics & Close Transaction Loop]:::help
-    H15 --> H16([End Process]):::help`
+    H15 --> H16([End Process]):::help`,
+
+  scm: `flowchart TD
+    classDef scm fill:#0891b2,stroke:#0e7490,stroke-width:2px,color:#fff;
+    classDef decision fill:#d69e2e,stroke:#ecc94b,stroke-width:2px,color:#1a202c;
+
+    S1([Start: Logistics Trigger]):::scm --> S2{Logistics Direction}:::decision
+    
+    S2 -->|Inbound: Supplier to Dock| S3[Read Approved Purchase Order Details]:::scm
+    S3 --> S4[Instantiate Inbound Shipment Log Row]:::scm
+    S4 --> S5[Carrier Dispatches Transit Code]:::scm
+    S5 --> S6[Goods Arrive at Dock: Verify & Close Inbound Loop]:::scm
+    S6 --> S12
+    
+    S2 -->|Outbound: Dock to Customer| S7[Read Confirmed Sales Order Details]:::scm
+    S7 --> S8[Instantiate Outbound Shipment Log Row]:::scm
+    S8 --> S9[Generate Tracking ID & Allocate Shipping Carrier]:::scm
+    S9 --> S10[Carrier Transit: Update Status = 'In Transit']:::scm
+    S10 --> S11[Delivery Receipt: Set Status = 'Delivered']:::scm
+    S11 --> S12([End Process: Logistics Logs Audited]):::scm`
 };
 
 // 2. FAQ Portal Database (Integrated into Documentation view)
@@ -368,6 +387,28 @@ const walkthroughSteps = {
       title: "4. Resolving the Incident",
       desc: "The representative dispatches a replacement product, updates the Ticket status to 'Resolved', and closes the SLA countdown timer.",
       db: "UPDATE Tickets \nSET status = 'Resolved', closed_at = NOW() \nWHERE ticket_id = 412;"
+    }
+  ],
+  scm: [
+    {
+      title: "1. Logistics Routing Trigger",
+      desc: "The system determines whether a shipment is Inbound (receiving items from a supplier) or Outbound (sending ordered items to a customer).",
+      db: "SELECT po_id FROM Purchase_Orders WHERE status = 'Approved';\n-- OR\nSELECT order_id FROM Sales_Orders WHERE status = 'Processing';"
+    },
+    {
+      title: "2. Instantiate Shipment Record",
+      desc: "The logistics planner creates a Shipment record to track carrier names, shipping methods, and estimated delivery dates.",
+      db: "INSERT INTO Shipments (reference_type, reference_id, status, destination_address_id)\nVALUES ('Outbound', 84, 'Pending', 104);"
+    },
+    {
+      title: "3. Assign Tracking Code & Carrier",
+      desc: "The shipping carrier (e.g. Lalamove, J&T) picks up the parcel, generating a tracking number stamped into the database, setting status to 'In Transit'.",
+      db: "UPDATE Shipments \nSET carrier_name = 'J&T Express', \n    tracking_number = 'TRACK-SCM-4512', \n    status = 'In Transit' \nWHERE shipment_id = 112;"
+    },
+    {
+      title: "4. Confirm Delivery Receipt",
+      desc: "The customer receives the package. The carrier reports a success webhook, setting the shipment to 'Delivered' and closing the sales order lifecycle.",
+      db: "UPDATE Shipments \nSET status = 'Delivered', \n    delivered_at = NOW() \nWHERE shipment_id = 112;\n\nUPDATE Sales_Orders \nSET status = 'Completed' \nWHERE order_id = 84;"
     }
   ]
 };
