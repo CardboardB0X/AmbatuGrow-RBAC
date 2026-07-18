@@ -1,12 +1,12 @@
 # 🗄️ Database Entity Relationship Diagram (ERD)
 
-This document outlines the database architecture for the AmbatuGrow ERP system. It illustrates table relationships, primary keys, foreign keys, and crucial operational attributes, incorporating the database-backed Role-Based Access Control (RBAC) security tables.
+This document outlines the database architecture for the AmbatuGrow ERP system, focused strictly on the core domains: Inventory & WMS, Helpdesk & Support, Supply Chain & Logistics, E-Commerce, and Procurement (Purchasing).
 
 ---
 
 ## 🗺️ Entity Relationship Map
 
-The following Mermaid diagram maps the database relationships across modules. It showcases the RBAC structure (`Permissions` and `Role_Permissions`) alongside the core ERP schema tables.
+The following Mermaid diagram maps the database relationships across the focused modules. It showcases the RBAC structure (`Permissions` and `Role_Permissions`) alongside the core schema tables.
 
 ```mermaid
 erDiagram
@@ -65,7 +65,7 @@ erDiagram
 
 ## 📋 Data Dictionary & Table Definitions
 
-### 1. Core & Master Data
+### 1. Core Master Data & RBAC
 
 #### `Roles`
 * **`role_id`** (INT, PK): Unique identifier for each role.
@@ -165,7 +165,7 @@ erDiagram
 * **`transaction_type`** (ENUM('Stock-in', 'Stock-out', 'Transfer')): Direction.
 * **`quantity`** (DECIMAL(10,2)): Movement change amount.
 * **`transaction_date`** (DATETIME): Timestamp.
-* **`reference_id`** (INT, FK -> Polymorphic): Linking POs, Sales Orders, or Transfer IDs.
+* **`reference_id`** (INT, FK -> Polymorphic): Linking POs, E-Commerce Orders, or Transfer IDs.
 
 ---
 
@@ -217,7 +217,7 @@ erDiagram
 
 ---
 
-### 4. Sales & Customer Management (CRM)
+### 4. E-Commerce & Customer Orders
 
 #### `Customers`
 * **`customer_id`** (INT, PK): Customer PK.
@@ -227,20 +227,19 @@ erDiagram
 * **`phone`** (VARCHAR(20)): Phone.
 * **`address_id`** (INT, FK -> `Addresses`): Customer delivery location.
 
-#### `Sales_Orders`
+#### `Sales_Orders` [Synchronized from E-Commerce]
 * **`order_id`** (INT, PK): Sales Order PK.
 * **`customer_id`** (INT, FK -> `Customers`): Requesting customer.
-* **`rep_id`** (INT, FK -> `Sales_Representatives`): Handling agent.
 * **`order_date`** (DATETIME): Timestamp.
 * **`status`** (VARCHAR(50)): Order progress status.
-* **`payment_term_id`** (INT, FK -> `Payment_Terms`): CRM payment terms.
-* **`currency_id`** (INT, FK -> `Currencies`): Quoted currency.
+* **`payment_term_id`** (INT, FK -> `Payment_Terms`): Payment terms.
+* **`currency_id`** (INT, FK -> `Currencies`): Settled currency.
 
 #### `Billing_Details`
 * **`billing_id`** (INT, PK): Billing record.
 * **`order_id`** (INT, FK -> `Sales_Orders`): Sales order.
 * **`address_id`** (INT, FK -> `Addresses`): Invoice destination address.
-* **`payment_method`** (VARCHAR(50)): Method (e.g. `Credit Card`, `Bank Transfer`).
+* **`payment_method`** (VARCHAR(50)): Method (e.g. `Credit Card`, `PayPal`).
 
 ---
 

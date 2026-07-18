@@ -1,6 +1,6 @@
 # 🌐 End-to-End Cross-Functional System Orchestration
 
-This architecture map displays how data transitions horizontally across system boundaries, tracking the operational flow from a purchase or sales trigger down to stock management and delivery fulfillment.
+This architecture map displays how data transitions horizontally across system boundaries, tracking the operational flow across Procurement, WMS, Supply Chain (SCM), E-Commerce, and Helpdesk.
 
 ---
 
@@ -12,32 +12,31 @@ flowchart TB
     classDef core fill:#2d3748,stroke:#4a5568,stroke-width:2px,color:#fff;
     classDef proc fill:#2b6cb0,stroke:#3182ce,stroke-width:2px,color:#fff;
     classDef inv fill:#2f855a,stroke:#38a169,stroke-width:2px,color:#fff;
-    classDef sales fill:#c05621,stroke:#dd6b20,stroke-width:2px,color:#fff;
     classDef help fill:#6b46c1,stroke:#805ad5,stroke-width:2px,color:#fff;
+    classDef ecom fill:#06b6d4,stroke:#0891b2,stroke-width:2px,color:#fff;
 
     %% Modules as Subgraphs
     subgraph Core_Master ["1. Core & Master Data"]
-        U[Users & Roles Table]:::core
+        U["Users & Roles Table"]:::core
     end
 
-    subgraph Procurement_SCM ["2. Procurement & Supply Chain"]
+    subgraph Procurement_SCM ["2. Procurement & Purchasing"]
         PR[Purchase Requisition]:::proc -->|Mgr Approval| PO[Purchase Orders]:::proc
-        SUP[Suppliers & Product_Suppliers]:::proc --> PO
+        SUP["Suppliers & Product_Suppliers"]:::proc --> PO
     end
 
     subgraph Inventory_WMS ["3. Product & Inventory (WMS)"]
         INV[Inventory_Locations]:::inv
         ST[Stock_Transactions]:::inv
-        PROD[Products & Categories]:::inv
+        PROD["Products & Categories"]:::inv
     end
 
-    subgraph Sales_CRM ["4. Sales & Customer Management"]
-        CUST[Customers Master]:::sales --> SO[Sales_Orders]:::sales
-        SO --> BIL[Billing_Details]:::sales
+    subgraph Digital_Sales ["4. E-Commerce & SCM"]
+        EC[E-Commerce Orders]:::ecom
+        SHIP[Shipments Table]:::ecom
     end
 
-    subgraph Helpdesk_Logistics ["5. Helpdesk & Logistics"]
-        SHIP[Shipments Table]:::help
+    subgraph Support_Logistics ["5. Helpdesk / Support"]
         TICK[Tickets System]:::help
     end
 
@@ -47,22 +46,21 @@ flowchart TB
     SHIP -->|Executes Delivery Receipt| ST
     ST -->|Updates Quantities| INV
 
-    SO -->|Checks Stock Availability| INV
-    SO -->|Triggers Outbound Logistics| SHIP
-    SO -->|Post-Sale Issue| TICK
+    EC -->|Syncs Order details| INV
+    EC -->|Triggers Outbound Logistics| SHIP
+    EC -->|Post-Sale Issue| TICK
 ```
 
 ---
 
 ## 🔄 Core Data Transition Paths
 
-### 1. Inbound Materials Pipeline (Procurement ➡️ Inventory)
-* **Reorder Trigger**: When stock in `Inventory_Locations` falls below the `min_quantity_threshold` defined on a product, the system automatically flags a `Purchase Requisition` request.
-* **Order Generation**: Once authorized, a `Purchase Order` (PO) is generated and dispatched to the supplier.
-* **Logistics Receipt**: When goods arrive at the loading dock, an inbound `Shipment` record is created, which generates a `Stock_Transaction` (Type = 'Stock-in') and updates the physical balance inside `Inventory_Locations`.
+### 1. Procurement Replenishment Pipeline (Procurement ➡️ Inventory)
+* **Reorder Trigger**: When WMS inventory levels inside `Inventory_Locations` drop below the safety limit (`min_quantity_threshold`), the system flags a `Purchase Requisition`.
+* **Purchase Dispatch**: Approved requisitions generate a `Purchase Order` sent to suppliers.
+* **Goods Receipt**: Dock deliveries trigger an inbound `Shipment` update, logging a `Stock_Transaction` (Type = 'Stock-in') and incrementing inventory quantities.
 
-### 2. Outbound Fulfillment Pipeline (CRM ➡️ Inventory ➡️ Logistics)
-* **Order Creation**: A client places an order, which queries the `Inventory_Locations` table to check current stock availability.
-* **Stock Allocation & Shipment**: If available, the `Sales_Order` status updates, triggering a new outbound `Shipment` log.
-* **Stock Decrement**: The WMS deducts the items from the corresponding location node and writes a `Stock_Transaction` (Type = 'Stock-out').
-* **Post-Sale SLA**: If the customer runs into issues post-delivery, the order references can trigger a support request inside the `Tickets` system, matching the client back to their communication history.
+### 2. Digital Fulfillment Pipeline (E-Commerce ➡️ WMS ➡️ Logistics)
+* **Order Sync**: E-Commerce order checkout details are synced immediately into the WMS, reserving inventory and decrementing available levels via a `Stock_Transaction` (Type = 'Stock-out').
+* **Outbound Dispatch**: The system schedules outbound logistics shipments inside the `Shipments` table.
+* **Post-Sale SLA Support**: If customer delivery issues arise, the order metadata references feed directly into the Helpdesk `Tickets` system to track support resolutions.

@@ -6,14 +6,14 @@ const flowcharts = {
     classDef core fill:#2d3748,stroke:#4a5568,stroke-width:2px,color:#fff;
     classDef proc fill:#2b6cb0,stroke:#3182ce,stroke-width:2px,color:#fff;
     classDef inv fill:#2f855a,stroke:#38a169,stroke-width:2px,color:#fff;
-    classDef sales fill:#c05621,stroke:#dd6b20,stroke-width:2px,color:#fff;
     classDef help fill:#6b46c1,stroke:#805ad5,stroke-width:2px,color:#fff;
+    classDef ecom fill:#06b6d4,stroke:#0891b2,stroke-width:2px,color:#fff;
 
     subgraph Core_Master ["1. Core & Master Data"]
         U["Users & Roles Table"]:::core
     end
 
-    subgraph Procurement_SCM ["2. Procurement & Supply Chain"]
+    subgraph Procurement_SCM ["2. Procurement & Purchasing"]
         PR[Purchase Requisition]:::proc -->|Mgr Approval| PO[Purchase Orders]:::proc
         SUP["Suppliers & Product_Suppliers"]:::proc --> PO
     end
@@ -24,13 +24,12 @@ const flowcharts = {
         PROD["Products & Categories"]:::inv
     end
 
-    subgraph Sales_CRM ["4. Sales & Customer Management"]
-        CUST[Customers Master]:::sales --> SO[Sales_Orders]:::sales
-        SO --> BIL[Billing_Details]:::sales
+    subgraph Digital_Sales ["4. E-Commerce & SCM"]
+        EC[E-Commerce Orders]:::ecom
+        SHIP[Shipments Table]:::ecom
     end
 
-    subgraph Helpdesk_Logistics ["5. Helpdesk & Logistics"]
-        SHIP[Shipments Table]:::help
+    subgraph Support_Logistics ["5. Helpdesk / Support"]
         TICK[Tickets System]:::help
     end
 
@@ -39,9 +38,9 @@ const flowcharts = {
     SHIP -->|Executes Delivery Receipt| ST
     ST -->|Updates Quantities| INV
 
-    SO -->|Checks Stock Availability| INV
-    SO -->|Triggers Outbound Logistics| SHIP
-    SO -->|Post-Sale Issue| TICK`,
+    EC -->|Syncs Order details| INV
+    EC -->|Triggers Outbound Logistics| SHIP
+    EC -->|Post-Sale Issue| TICK`,
 
   procurement: `flowchart TD
     classDef proc fill:#2b6cb0,stroke:#3182ce,stroke-width:2px,color:#fff;
@@ -95,29 +94,6 @@ const flowcharts = {
     I14 -->|Yes| I16[Trigger Re-order Request Alert via System BI Module]:::inv
     I16 --> I17([End: Automated Procurement Notification Dispatched]):::inv`,
 
-  crm: `flowchart TD
-    classDef sales fill:#c05621,stroke:#dd6b20,stroke-width:2px,color:#fff;
-    classDef decision fill:#d69e2e,stroke:#ecc94b,stroke-width:2px,color:#1a202c;
-
-    S1([Start: Client Intent]):::sales --> S2[Sales Rep Instantiates or Queries Customers Record]:::sales
-    S2 --> S3[Generate Official Quotation with Pricing / Discount Rules]:::sales
-    S3 --> S4{Customer Confirms Order?}:::decision
-    
-    S4 -->|No / Expired| S4Drop[Status = 'Cancelled']:::sales --> S15([End Process]):::sales
-    S4 -->|Yes| S5[Instantiate Row in Sales_Orders with Status = 'Pending']:::sales
-    
-    S5 --> S6[Bind Context Data: payment_term_id, currency_id, Billing_Details]:::sales
-    S6 --> S7[Query Inventory_Locations to Validate Item Stock]:::sales
-    
-    S7 --> S8{Stock Available?}:::decision
-    S8 -->|No| S8Hold[Status = 'On Hold' -> Create Backorder Requisition]:::sales --> S7
-    S8 -->|Yes| S9[Update Sales_Orders Status = 'Processed']:::sales
-    
-    S9 --> S10[Dispatch Notification to Logistics Layer for Outbound Shipment]:::sales
-    S10 --> S11[Warehouse Executes Stock-out & Lowers Available Balances]:::sales
-    S11 --> S14[Order Status Set to 'Delivered']:::sales
-    S14 --> S15([End Process]):::sales`,
-
   helpdesk: `flowchart TD
     classDef help fill:#6b46c1,stroke:#805ad5,stroke-width:2px,color:#fff;
     classDef decision fill:#d69e2e,stroke:#ecc94b,stroke-width:2px,color:#1a202c;
@@ -168,10 +144,10 @@ const faqData = [
   },
   {
     id: 4,
-    category: "sales",
-    question: "What happens if a Sales Order contains out-of-stock items?",
-    answer: "When a Sales Order is placed, the CRM queries the WMS Inventory_Locations table. If stock is available, it progresses to 'Processed'. If unavailable, the Sales Order status changes to 'On Hold' and triggers a Backorder Requisition in the Procurement module to secure the inventory from a supplier.",
-    tags: ["stockout", "backorder", "sales order", "CRM", "hold"]
+    category: "ecommerce",
+    question: "What happens if an E-Commerce order contains out-of-stock items?",
+    answer: "When a webstore checkout syncs, the system queries WMS Inventory_Locations. If stock is unavailable, the order is flagged 'On Hold' and triggers a backorder replenishment request in the Procurement module.",
+    tags: ["stockout", "backorder", "ecommerce", "hold"]
   },
   {
     id: 5,
@@ -186,20 +162,6 @@ const faqData = [
     question: "How does the E-Commerce Integration sync data in real time?",
     answer: "The E-Commerce Integration module handles real-time webhooks. When a customer pays online, the web API transfers items, customer details, and payment tokens into the ERP's Sales_Orders table, while WMS automatically updates stock counts on the online shop to prevent overselling.",
     tags: ["ecommerce", "synchronization", "webhooks", "api", "orders"]
-  },
-  {
-    id: 7,
-    category: "projects",
-    question: "How are project budgets managed?",
-    answer: "Project Managers assign equipment and labor rates to project tasks. As hours are submitted and materials are consumed, the actual expenses are logged in the project budget to record operational expenditures (OpEx) for performance analysis.",
-    tags: ["project management", "budget", "expenses"]
-  },
-  {
-    id: 8,
-    category: "hr",
-    question: "Who can see employee payroll records?",
-    answer: "Based on RBAC permissions, employee payroll details are restricted. General Employees can only view their own profile and payslips. HR Managers have full access to run payroll computations. All other roles have zero access.",
-    tags: ["payroll", "confidentiality", "HR", "access control", "RBAC"]
   }
 ];
 
@@ -214,7 +176,7 @@ const rbacRoles = {
       "Access and export all reports and operational audit trails.",
       "Override system locks, blockages, or invalid transactions."
     ],
-    perms: { core: "Full Access", proc: "Full Access", wms: "Full Access", scm: "Full Access", sales: "Full Access", help: "Full Access", ecom: "Full Access", proj: "Full Access", hr: "Full Access", bi: "Full Access" }
+    perms: { core: "Full Access", proc: "Full Access", wms: "Full Access", scm: "Full Access", help: "Full Access", ecom: "Full Access", bi: "Full Access" }
   },
   employee: {
     title: "General Employee",
@@ -222,43 +184,9 @@ const rbacRoles = {
     duties: [
       "Create and submit internal Purchase Requisitions.",
       "Log personal working hours, timesheets, and leave requests.",
-      "Submit helpdesk support tickets for equipment or account issues.",
-      "View and execute tasks assigned within project workspaces."
+      "Submit helpdesk support tickets for equipment or account issues."
     ],
-    perms: { core: "No Access", proc: "Read & Write (Requisitions)", wms: "No Access", scm: "No Access", sales: "No Access", help: "Read & Write (Tickets)", ecom: "No Access", proj: "Read & Write (Tasks)", hr: "Read-Only (Self)", bi: "No Access" }
-  },
-  pm: {
-    title: "Project Manager",
-    desc: "Coordinates projects, work breakdown structures, schedules, and resource planning across active contracts.",
-    duties: [
-      "Define project scopes, timelines, tasks, and task dependencies.",
-      "Allocate employees, budget, and materials to task nodes.",
-      "Track project expenditures against budget estimates in real-time.",
-      "Monitor task completion rates and compile progress dashboards."
-    ],
-    perms: { core: "No Access", proc: "No Access", wms: "No Access", scm: "No Access", sales: "No Access", help: "No Access", ecom: "No Access", proj: "Full Access", hr: "Read-Only (Staff Assignees)", bi: "Read-Only" }
-  },
-  hrm: {
-    title: "HR Specialist / Manager",
-    desc: "Oversees employee lifecycle, payroll processing, attendance tracking, recruitment, and organizational roles.",
-    duties: [
-      "Maintain employee personnel records, contract files, and certifications.",
-      "Process payroll runs, including tax withholdings and deductions.",
-      "Manage recruitment, coordinate applicant pipelines, and onboarding tasks.",
-      "Administer leaves, timesheets, and biometric attendance reports."
-    ],
-    perms: { core: "No Access", proc: "No Access", wms: "No Access", scm: "No Access", sales: "No Access", help: "No Access", ecom: "No Access", proj: "Read-Only", hr: "Full Access", bi: "Read-Only" }
-  },
-  salesrep: {
-    title: "Sales Representative",
-    desc: "Front-line sales operations agent managing customer pipelines, quotes, and active sales orders.",
-    duties: [
-      "Maintain customer files and records inside the CRM.",
-      "Draft quotations applying pricing rules and discount policies.",
-      "Convert quotes into Sales Orders and verify initial stock availability.",
-      "Sync order contexts and customer details with E-Commerce modules."
-    ],
-    perms: { core: "No Access", proc: "No Access", wms: "Read-Only (Stock Balance)", scm: "No Access", sales: "Read & Write", help: "Read-Only", ecom: "Read & Write", proj: "No Access", hr: "No Access", bi: "Read-Only" }
+    perms: { core: "Read-Only (Self)", proc: "Read & Write (Requisitions)", wms: "No Access", scm: "No Access", help: "Read & Write (Tickets)", ecom: "No Access", bi: "No Access" }
   },
   supportrep: {
     title: "Customer Support Rep",
@@ -269,7 +197,7 @@ const rbacRoles = {
       "Publish self-service troubleshooting articles and FAQ guides.",
       "Escalate unresolved issues violating SLA windows to managers."
     ],
-    perms: { core: "No Access", proc: "No Access", wms: "No Access", scm: "No Access", sales: "Read-Only (Customer Orders)", help: "Read & Write", ecom: "No Access", proj: "No Access", hr: "No Access", bi: "Read-Only" }
+    perms: { core: "No Access", proc: "No Access", wms: "No Access", scm: "No Access", help: "Read & Write", ecom: "No Access", bi: "Read-Only" }
   },
   wmsmgr: {
     title: "WMS Manager",
@@ -280,7 +208,7 @@ const rbacRoles = {
       "Oversee large-scale inter-warehouse transfers and shipments.",
       "Review stock balance metrics and dispatch inventory reports."
     ],
-    perms: { core: "No Access", proc: "Read-Only (Supplier POs)", wms: "Full Access", scm: "Read & Write", sales: "No Access", help: "No Access", ecom: "Read-Only", proj: "No Access", hr: "No Access", bi: "Read-Only" }
+    perms: { core: "No Access", proc: "Read-Only (Supplier POs)", wms: "Full Access", scm: "Read & Write", help: "No Access", ecom: "Read-Only", bi: "Read-Only" }
   },
   wmsoperator: {
     title: "Warehouse Operator",
@@ -291,7 +219,7 @@ const rbacRoles = {
       "Fulfill outgoing sales order lists, logging 'Stock-Out' transactions.",
       "Execute physical stock transfers between storage zones."
     ],
-    perms: { core: "No Access", proc: "No Access", wms: "Read & Write", scm: "Read & Write", sales: "No Access", help: "No Access", ecom: "No Access", proj: "No Access", hr: "No Access", bi: "No Access" }
+    perms: { core: "No Access", proc: "No Access", wms: "Read & Write", scm: "Read & Write", help: "No Access", ecom: "No Access", bi: "No Access" }
   },
   procspecialist: {
     title: "Procurement Specialist",
@@ -302,7 +230,7 @@ const rbacRoles = {
       "Review vendor delivery performance, ratings, and compliance metrics.",
       "Coordinate with SCM to expedite urgent supply shipments."
     ],
-    perms: { core: "No Access", proc: "Read & Write", wms: "Read-Only", scm: "Read & Write", sales: "No Access", help: "No Access", ecom: "No Access", proj: "No Access", hr: "No Access", bi: "Read-Only" }
+    perms: { core: "No Access", proc: "Read & Write", wms: "Read-Only", scm: "Read & Write", help: "No Access", ecom: "No Access", bi: "Read-Only" }
   },
   ecomadmin: {
     title: "E-Commerce Administrator",
@@ -313,7 +241,7 @@ const rbacRoles = {
       "Manage online catalog product detail uploads and price points.",
       "Coordinate web customer profiles and payment gateways."
     ],
-    perms: { core: "No Access", proc: "No Access", wms: "Read-Only", scm: "No Access", sales: "Read-Only", help: "No Access", ecom: "Read & Write", proj: "No Access", hr: "No Access", bi: "Read-Only" }
+    perms: { core: "No Access", proc: "No Access", wms: "Read-Only", scm: "No Access", help: "No Access", ecom: "Read & Write", bi: "Read-Only" }
   }
 };
 
@@ -495,7 +423,7 @@ function renderFAQs(faqs) {
       <div class="empty-results">
         <i class="fa-regular fa-folder-open"></i>
         <p>No FAQs match your search keywords.</p>
-        <span>Try searching terms like "3-way match", "reorder", "hold", or "SLA".</span>
+        <span>Try searching terms like \"reorder\", \"hold\", or \"SLA\".</span>
       </div>
     `;
     return;
@@ -667,11 +595,8 @@ function initRBACSimulator() {
     proc: "Procurement & Purchase",
     wms: "Inventory & WMS",
     scm: "Supply Chain / Logistics",
-    sales: "Sales & CRM",
     help: "Helpdesk / Support",
     ecom: "E-Commerce Integrations",
-    proj: "Project Management",
-    hr: "Human Resources",
     bi: "Business Intelligence"
   };
 

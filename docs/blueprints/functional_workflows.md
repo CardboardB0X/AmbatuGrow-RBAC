@@ -32,7 +32,7 @@ flowchart TD
     Step8 --> Step9[Materials Arrive at Dock: Create Inbound Shipment]:::proc
     
     Step9 --> Step10[Record Goods Receipt & Execute Stock-in Log]:::proc
-    Step10 --> Step14([End Process: Inbound Items Transferred to WMS]):::proc
+    Step10 --> Step14([End Process: Inbound Items Logged]):::proc
 ```
 
 ### Key Stages
@@ -85,45 +85,7 @@ flowchart TD
 
 ---
 
-## 🏷️ C. Sales & Customer Management (CRM) Process
-
-This workflow charts the processing of customer demands, transforming a raw quote into an active shipment.
-
-```mermaid
-flowchart TD
-    %% Styling
-    classDef sales fill:#c05621,stroke:#dd6b20,stroke-width:2px,color:#fff;
-    classDef decision fill:#d69e2e,stroke:#ecc94b,stroke-width:2px,color:#1a202c;
-
-    S1([Start: Client Intent]):::sales --> S2[Sales Rep Instantiates or Queries Customers Record]:::sales
-    S2 --> S3[Generate Official Quotation with Pricing / Discount Rules]:::sales
-    S3 --> S4{Customer Confirms Order?}:::decision
-    
-    S4 -->|No / Expired| S4Drop[Status = 'Cancelled']:::sales --> S15([End Process]):::sales
-    S4 -->|Yes| S5[Instantiate Row in Sales_Orders with Status = 'Pending']:::sales
-    
-    S5 --> S6[Bind Context Data: payment_term_id, currency_id, Billing_Details]:::sales
-    S6 --> S7[Query Inventory_Locations to Validate Item Stock]:::sales
-    
-    S7 --> S8{Stock Available?}:::decision
-    S8 -->|No| S8Hold[Status = 'On Hold' -> Create Backorder Requisition]:::sales --> S7
-    S8 -->|Yes| S9[Update Sales_Orders Status = 'Processed']:::sales
-    
-    S9 --> S10[Dispatch Notification to Logistics Layer for Outbound Shipment]:::sales
-    S10 --> S11[Warehouse Executes Stock-out & Lowers Available Balances]:::sales
-    S11 --> S14[Order Status Set to 'Delivered']:::sales
-    S14 --> S15([End Process]):::sales
-```
-
-### Key Stages
-1. **Quotation Stage**: Sales Representatives query Customer Master records and apply regional price books or discount matrices.
-2. **Commit Gate**: Confirmed quotes update to Sales Orders, locking in transaction details (currencies, payment terms).
-3. **Availability Hold**: If stock is unavailable, orders are put on hold and backordered via the Procurement system.
-4. **Fulfillment & Delivery**: Handover to warehouse for dispatch, final delivery receipt, and order completion.
-
----
-
-## 🛠️ D. Helpdesk & Post-Sale Case Resolution Process
+## 🛠️ C. Helpdesk & Post-Sale Case Resolution Process
 
 This workflow tracks incoming post-sale inquiries to ensure compliance with service agreement windows.
 

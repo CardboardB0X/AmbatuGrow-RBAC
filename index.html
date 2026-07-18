@@ -105,11 +105,11 @@
           <div class="stats-grid">
             <div class="glass-card stat-item active-workflows">
               <span>Active Process Workflows</span>
-              <h4>5 Flows</h4>
+              <h4>4 Flows</h4>
             </div>
             <div class="glass-card stat-item roles">
               <span>Security Roles Defined</span>
-              <h4>10 Roles</h4>
+              <h4>7 Roles</h4>
             </div>
             <div class="glass-card stat-item database">
               <span>Database ERD Tables</span>
@@ -129,19 +129,13 @@
               <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
                 <div class="module-card-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
                 <h4>Inventory & WMS</h4>
-                <p>Tracks SKUs, records deliveries, fulfills orders, and triggers alerts at safety thresholds.</p>
+                <p>Tracks SKUs, records warehouse movements, locates bins, and triggers alerts at thresholds.</p>
               </div>
               
               <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
                 <div class="module-card-icon"><i class="fa-solid fa-cart-shopping"></i></div>
                 <h4>Procurement & PO</h4>
                 <p>Manages requisitions, supplier catalogs, purchase orders, and inbound receipts.</p>
-              </div>
-              
-              <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
-                <div class="module-card-icon"><i class="fa-solid fa-users"></i></div>
-                <h4>Sales & CRM</h4>
-                <p>Manages quotations, customer profiles, and sales order fulfillment cycles.</p>
               </div>
               
               <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
@@ -162,24 +156,6 @@
                 <p>Real-time order importing, inventory updates, and channel sync.</p>
               </div>
               
-              <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
-                <div class="module-card-icon"><i class="fa-solid fa-folder-tree"></i></div>
-                <h4>Project Management</h4>
-                <p>Manages work breakdown structures, schedules, and resource allocations.</p>
-              </div>
-              
-              <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
-                <div class="module-card-icon"><i class="fa-solid fa-id-card-clip"></i></div>
-                <h4>Human Resources</h4>
-                <p>Stores employee records, runs payroll, and logs attendance metrics.</p>
-              </div>
-              
-              <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
-                <div class="module-card-icon"><i class="fa-solid fa-chart-pie"></i></div>
-                <h4>Reporting & BI</h4>
-                <p>Standard and custom reports with role-based access security.</p>
-              </div>
-              
             </div>
           </div>
         </section>
@@ -190,7 +166,6 @@
             <button class="flow-tab active" data-diagram="orchestration">System Orchestration</button>
             <button class="flow-tab" data-diagram="procurement">Procurement PO</button>
             <button class="flow-tab" data-diagram="inventory">Inventory & WMS</button>
-            <button class="flow-tab" data-diagram="crm">CRM & Sales</button>
             <button class="flow-tab" data-diagram="helpdesk">Helpdesk SLA</button>
           </div>
           
@@ -246,7 +221,7 @@
                   </p>
                   <ul>
                     <li><i class="fa-solid fa-angle-right"></i> The Inventory module immediately decrements stock and updates the online channel.</li>
-                    <li><i class="fa-solid fa-angle-right"></i> The CRM generates a sales order and updates their transaction history.</li>
+                    <li><i class="fa-solid fa-angle-right"></i> The Logistics module schedules shipping and assigns carrier details.</li>
                   </ul>
                 </div>
                 
@@ -279,17 +254,16 @@
                   </ul>
                 </div>
                 
-                <div class="doc-section filterable-section" data-keywords="sales order crm quotation customer profile stock check warehouse operator fulfillment delivery completion">
-                  <h4>Sales Fulfillment & Customer Outbound Lifecycle</h4>
+                <div class="doc-section filterable-section" data-keywords="ecommerce order sync stock check warehouse operator fulfillment delivery completion">
+                  <h4>E-Commerce Order Sync & Outbound Fulfillment Lifecycle</h4>
                   <p>
-                    The customer fulfillment loop ensures rapid dispatch and delivery integrity:
+                    The digital fulfillment loop ensures rapid dispatch and delivery integrity:
                   </p>
                   <ul>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>CRM Quote</strong>: Sales Reps query the customer profile, apply discount matrices, and issue a Quotation.</li>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>Order Creation</strong>: Once confirmed, a Sales Order is created with payment terms.</li>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>Stock Check</strong>: The system queries the inventory levels. If stock is available, it routes the order to the warehouse. If out of stock, the order is flagged 'On Hold' and triggers a Procurement request.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Order Sync</strong>: Customer completes checkout on the webstore, instantly creating a Sales Order inside the ERP.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Stock Check</strong>: The system queries the inventory levels. If stock is available, it routes the order to the warehouse.</li>
                     <li><i class="fa-solid fa-circle-check"></i> <strong>WMS Stock-out</strong>: Operators retrieve the items, package them, decrement inventory locations, and log a 'Stock-out' transaction.</li>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>Delivery Receipt</strong>: The logistics carrier delivers the items and flags the Sales Order status to 'Delivered' to complete the operational cycle.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Outbound Dispatch</strong>: The logistics carrier delivers the items and flags the Shipment status to 'Delivered' to complete the operational cycle.</li>
                   </ul>
                 </div>
               </div>
@@ -380,10 +354,10 @@
                         </tr>
                         <tr>
                           <td><strong>Sales_Orders</strong></td>
-                          <td>CRM</td>
+                          <td>E-Commerce</td>
                           <td>order_id</td>
-                          <td>customer_id, rep_id, payment_term_id, currency_id</td>
-                          <td>Inbound client purchase agreements.</td>
+                          <td>customer_id, payment_term_id, currency_id</td>
+                          <td>Inbound client purchase agreements imported from E-Commerce.</td>
                         </tr>
                         <tr>
                           <td><strong>Tickets</strong></td>
@@ -417,8 +391,6 @@
                 <button class="filter-btn" data-category="sales">Sales & CRM</button>
                 <button class="filter-btn" data-category="helpdesk">Helpdesk & SLA</button>
                 <button class="filter-btn" data-category="ecommerce">E-Commerce</button>
-                <button class="filter-btn" data-category="projects">Projects</button>
-                <button class="filter-btn" data-category="hr">Human Resources</button>
               </div>
               
               <!-- Accordion Cards Container -->
@@ -437,9 +409,6 @@
             <select id="rbac-role-select" class="custom-select">
               <option value="superadmin">Super Admin</option>
               <option value="employee" selected>General Employee</option>
-              <option value="pm">Project Manager</option>
-              <option value="hrm">HR Specialist / Manager</option>
-              <option value="salesrep">Sales Representative</option>
               <option value="supportrep">Customer Support Rep</option>
               <option value="wmsmgr">WMS Manager</option>
               <option value="wmsoperator">Warehouse Operator</option>
