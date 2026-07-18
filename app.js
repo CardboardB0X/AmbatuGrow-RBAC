@@ -267,6 +267,20 @@ const faqData = [
     question: "How does the E-Commerce Integration sync data in real time?",
     answer: "The E-Commerce Integration module handles real-time webhooks. When a customer pays online, the web API transfers items, customer details, and payment tokens into the ERP's Sales_Orders table, while WMS automatically updates stock counts on the online shop to prevent overselling.",
     tags: ["ecommerce", "synchronization", "webhooks", "api", "orders"]
+  },
+  {
+    id: 7,
+    category: "hidden-easter-egg",
+    question: "Liah, gets mo na?",
+    answer: "Oo naman, ITEC 75 matches are fully mapped! Double-check the entity-relationship diagrams and RBAC security matrix to make sure. Kaya natin 'to! 💚",
+    tags: ["liah", "gets mo na", "easter egg", "cvsu"]
+  },
+  {
+    id: 8,
+    category: "hidden-easter-egg",
+    question: "Emman, kaya pa ba?",
+    answer: "Kakayanin pa! WMS stock locations are locked in, SLAs are running, and database DDL schemas compile perfectly. CVSU IT Dept is ready! 🚀",
+    tags: ["emman", "kaya pa ba", "easter egg", "cvsu"]
   }
 ];
 
@@ -1264,6 +1278,10 @@ function initDocsAndSearchEngine() {
       // Category Pill filter
       if (currentFAQCategory !== 'all') {
         filtered = filtered.filter(f => f.category === currentFAQCategory);
+      } else {
+        if (query === '') {
+          filtered = filtered.filter(f => f.category !== 'hidden-easter-egg');
+        }
       }
 
       // Keyword search
