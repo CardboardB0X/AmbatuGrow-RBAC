@@ -245,7 +245,134 @@ const rbacRoles = {
   }
 };
 
-// 4. Flowchart Pan & Zoom Controls Module
+// 4. Systems Integration SQL Playground queries
+const sqlPlaygroundQueries = {
+  reorder: `-- FETCH SKUS REQUIRING REORDER
+SELECT 
+  p.product_id, 
+  p.sku, 
+  p.name AS product_name, 
+  il.quantity AS current_stock, 
+  p.min_quantity_threshold AS safety_limit
+FROM Products p
+JOIN Inventory_Locations il ON p.product_id = il.product_id
+WHERE il.quantity <= p.min_quantity_threshold;`,
+
+  shipment: `-- TRACK OUTBOUND LOGISTICS & DELIVERY STATUS
+SELECT 
+  s.shipment_id, 
+  so.order_id, 
+  c.first_name, 
+  c.last_name, 
+  a.street, 
+  a.city, 
+  s.reference_type, 
+  so.status AS delivery_status
+FROM Shipments s
+JOIN Sales_Orders so ON s.reference_id = so.order_id
+JOIN Customers c ON so.customer_id = c.customer_id
+JOIN Addresses a ON s.destination_address_id = a.address_id
+WHERE s.reference_type = 'Outbound';`,
+
+  tickets: `-- LIST UNRESOLVED CRITICAL & HIGH SUPPORT TICKETS
+SELECT 
+  t.ticket_id, 
+  c.first_name, 
+  c.last_name, 
+  t.subject, 
+  t.priority, 
+  t.order_id,
+  t.status
+FROM Tickets t
+JOIN Customers c ON t.customer_id = c.customer_id
+WHERE t.priority IN ('Critical', 'High') 
+  AND t.status != 'Resolved';`,
+
+  supplier: `-- SHOW PREFERRED SUPPLIER CATALOG RATES
+SELECT 
+  p.sku, 
+  p.name AS product_name, 
+  s.supplier_name, 
+  ps.supplier_sku, 
+  ps.unit_price AS catalog_cost, 
+  ps.lead_time_days
+FROM Product_Suppliers ps
+JOIN Products p ON ps.product_id = p.product_id
+JOIN Suppliers s ON ps.supplier_id = s.supplier_id
+WHERE ps.is_preferred = 1;`
+};
+
+// 5. Interactive Flowchart Walkthrough Steps
+const walkthroughSteps = {
+  procurement: [
+    {
+      title: "1. Create Purchase Requisition (PR)",
+      desc: "An employee logs a material request inside the department dashboard, generating a Requisition row with status 'Pending'.",
+      db: "INSERT INTO Purchase_Requisitions (req_number, employee_id, status)\nVALUES ('PR-2026-001', 12, 'Pending');"
+    },
+    {
+      title: "2. Manager Approval Gate",
+      desc: "The Department Manager reviews the request against active budgets and signs off, updating status to 'Approved'.",
+      db: "UPDATE Purchase_Requisitions \nSET status = 'Approved', approved_by = 4 \nWHERE req_id = 45;"
+    },
+    {
+      title: "3. Generate Purchase Order (PO)",
+      desc: "The Procurement Specialist assigns the supplier (pulling defaults from Product_Suppliers) and dispatches the PO.",
+      db: "INSERT INTO Purchase_Orders (po_number, supplier_id, status)\nVALUES ('PO-2026-987', 5, 'Sent');\n\nINSERT INTO PO_Items (po_id, product_id, quantity)\nVALUES (112, 18, 50.00);"
+    },
+    {
+      title: "4. Goods Inbound Dock Stock-In",
+      desc: "Supplier delivers the items. Warehouse Operators verify the SKUs, increment locations, and write Stock-In logs.",
+      db: "INSERT INTO Shipments (reference_type, reference_id, status)\nVALUES ('Inbound', 112, 'Received');\n\nUPDATE Inventory_Locations \nSET quantity = quantity + 50.00 \nWHERE warehouse_id = 2 AND product_id = 18;\n\nINSERT INTO Stock_Transactions (product_id, transaction_type, quantity)\nVALUES (18, 'Stock-in', 50.00);"
+    }
+  ],
+  inventory: [
+    {
+      title: "1. Verify Product Catalog SKU",
+      desc: "A WMS operator scans a box on the floor. The system queries the Products master table to verify metadata configurations.",
+      db: "SELECT product_id, sku, min_quantity_threshold \nFROM Products \nWHERE sku = 'SKU-MINT-88';"
+    },
+    {
+      title: "2. Zone Allocation Mapping",
+      desc: "The system matches the product's storage requirements to active warehouse layouts to identify the correct zone coordinates.",
+      db: "SELECT zone_id, zone_name \nFROM Warehouse_Zones \nWHERE warehouse_id = 1 AND category = 'Standard';"
+    },
+    {
+      title: "3. Log Transaction & Update Stock",
+      desc: "The operator executes the movement, updating physical zone counts and writing transactional audits.",
+      db: "UPDATE Inventory_Locations \nSET quantity = quantity + 15.00 \nWHERE inventory_id = 82;\n\nINSERT INTO Stock_Transactions (product_id, transaction_type, quantity)\nVALUES (12, 'Stock-in', 15.00);"
+    },
+    {
+      title: "4. Safety Threshold evaluation",
+      desc: "Database constraints calculate remaining stock. If stock drops below safety limits, the system triggers a reorder alert.",
+      db: "SELECT quantity, min_quantity_threshold \nFROM Inventory_Locations \nJOIN Products USING (product_id) \nWHERE product_id = 12;\n\n-- [Alert Triggered: Current Stock 4.00 <= Threshold 5.00]"
+    }
+  ],
+  helpdesk: [
+    {
+      title: "1. Log Ticket Incident",
+      desc: "A customer reports a post-sale shipment issue, creating a new incident Ticket linked to the Customer and Order profiles.",
+      db: "INSERT INTO Tickets (customer_id, order_id, subject, priority, status)\nVALUES (8, 204, 'Damaged product received', 'High', 'Pending');"
+    },
+    {
+      title: "2. SLA Deadline Stamping",
+      desc: "The system reads ticket priority (e.g. High) and stamps the target resolution deadline (6 hours in future) into the database.",
+      db: "UPDATE Tickets \nSET sla_deadline = DATE_ADD(NOW(), INTERVAL 6 HOUR), \n    status = 'In Progress', \n    assigned_to = 2 \nWHERE ticket_id = 412;"
+    },
+    {
+      title: "3. Systems Integration Audit",
+      desc: "Support Reps trace backend shipments, querying stock histories and tracking numbers to resolve complaints.",
+      db: "SELECT * \nFROM Sales_Orders \nJOIN Shipments ON Sales_Orders.order_id = Shipments.reference_id \nWHERE order_id = 204;"
+    },
+    {
+      title: "4. Resolve Ticket & Close SLA",
+      desc: "The agent authorizes a replacement or refund, updating Ticket status to 'Resolved' and logging the close timestamp.",
+      db: "UPDATE Tickets \nSET status = 'Resolved', closed_at = NOW() \nWHERE ticket_id = 412;"
+    }
+  ]
+};
+
+// 6. Flowchart Pan & Zoom Controls Module
 let scale = 1.0;
 let panX = 0;
 let panY = 0;
@@ -332,7 +459,420 @@ function resetPanZoomState() {
   }
 }
 
-// 5. Tab Routing & Views Management
+// 7. Guided Process Walkthrough Controller
+let currentWalkStep = 0;
+let currentWalkKey = null;
+
+function initWalkthroughEngine() {
+  const prevBtn = document.getElementById('btn-walk-prev');
+  const nextBtn = document.getElementById('btn-walk-next');
+  
+  if (!prevBtn || !nextBtn) return;
+
+  const updateWalkDisplay = () => {
+    const titleEl = document.getElementById('walkthrough-step-title');
+    const descEl = document.getElementById('walkthrough-step-desc');
+    const indicatorEl = document.getElementById('walkthrough-step-indicator');
+    const logsEl = document.getElementById('walkthrough-db-logs-panel');
+
+    if (!currentWalkKey || !walkthroughSteps[currentWalkKey]) {
+      titleEl.textContent = "Select Flow";
+      descEl.textContent = "Select a specific flowchart to begin the step-by-step guided systems walk.";
+      indicatorEl.textContent = "Step 0/0";
+      logsEl.innerHTML = `[SYSTEM IDLE] Select sub-process to audit SQL transactions.`;
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      return;
+    }
+
+    const steps = walkthroughSteps[currentWalkKey];
+    const total = steps.length;
+    indicatorEl.textContent = `Step ${currentWalkStep + 1}/${total}`;
+
+    const step = steps[currentWalkStep];
+    titleEl.innerHTML = `<span class="step-badge">Step ${currentWalkStep + 1}</span> ${step.title}`;
+    descEl.textContent = step.desc;
+
+    // Output formatted syntax
+    logsEl.innerHTML = `<span class="sql-keyword">-- SQL TRANSACTION LOG:</span>\n${step.db}`;
+
+    prevBtn.disabled = currentWalkStep === 0;
+    nextBtn.disabled = currentWalkStep === total - 1;
+  };
+
+  prevBtn.addEventListener('click', () => {
+    if (currentWalkStep > 0) {
+      currentWalkStep--;
+      updateWalkDisplay();
+    }
+  });
+
+  nextBtn.addEventListener('click', () => {
+    if (currentWalkKey && currentWalkStep < walkthroughSteps[currentWalkKey].length - 1) {
+      currentWalkStep++;
+      updateWalkDisplay();
+    }
+  });
+
+  // Export helper globally so flowchart tab switches can bind keys
+  window.triggerWalkthroughStart = (key) => {
+    if (walkthroughSteps[key]) {
+      currentWalkKey = key;
+      currentWalkStep = 0;
+    } else {
+      currentWalkKey = null;
+      currentWalkStep = 0;
+    }
+    updateWalkDisplay();
+  };
+}
+
+// 8. SQL Playground Controller
+function initSQLPlayground() {
+  const select = document.getElementById('sql-playground-select');
+  const codeBox = document.getElementById('sql-playground-code');
+  const copyBtn = document.getElementById('btn-sql-copy');
+
+  if (!select || !codeBox || !copyBtn) return;
+
+  const renderSQL = (val) => {
+    const raw = sqlPlaygroundQueries[val] || '';
+    
+    // Simple mock highlighting for displaying queries beautifully
+    const formatted = raw
+      .replace(/(-- .*)/g, '<span class="sql-comment">$1</span>')
+      .replace(/\b(SELECT|FROM|JOIN|ON|WHERE|AND|OR|IN|JOIN|USING|INSERT|UPDATE|SET|VALUES)\b/g, '<span class="sql-keyword">$1</span>')
+      .replace(/('[^']*')/g, '<span class="sql-string">$1</span>');
+      
+    codeBox.innerHTML = formatted;
+  };
+
+  select.addEventListener('change', (e) => {
+    renderSQL(e.target.value);
+  });
+
+  copyBtn.addEventListener('click', () => {
+    const rawCode = sqlPlaygroundQueries[select.value] || '';
+    navigator.clipboard.writeText(rawCode).then(() => {
+      const originalText = copyBtn.innerHTML;
+      copyBtn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+      setTimeout(() => {
+        copyBtn.innerHTML = originalText;
+      }, 1500);
+    });
+  });
+
+  // Initial load
+  renderSQL(select.value);
+}
+
+// 9. Live SLA Ticketing Engine Sandbox
+let mockTickets = [
+  {
+    id: 101,
+    customer: "Jane Doe (ID: 1)",
+    subject: "Package damaged in transit",
+    priority: "critical",
+    status: "In Progress",
+    deadline: Date.now() + 2 * 60 * 60 * 1000 // 2 hours in future
+  },
+  {
+    id: 102,
+    customer: "CvSU Library Desk (ID: 3)",
+    subject: "Missing parts inside parcel",
+    priority: "high",
+    status: "In Progress",
+    deadline: Date.now() + 6 * 60 * 60 * 1000 // 6 hours in future
+  }
+];
+
+function initTicketingSandbox() {
+  const listContainer = document.getElementById('live-tickets-list');
+  const submitBtn = document.getElementById('btn-submit-ticket');
+  const customerSelect = document.getElementById('ticket-customer-select');
+  const prioritySelect = document.getElementById('ticket-priority-select');
+  const subjectInput = document.getElementById('ticket-subject-input');
+
+  if (!listContainer || !submitBtn) return;
+
+  const renderTickets = () => {
+    if (mockTickets.length === 0) {
+      listContainer.innerHTML = `<div style="text-align: center; font-size: 12px; color: var(--text-muted); padding: 12px;">No active support tickets. Submit one to test the live SLA timer.</div>`;
+      return;
+    }
+
+    listContainer.innerHTML = mockTickets.map(t => {
+      const isResolved = t.status === "Resolved";
+      let timerHTML = '';
+      
+      if (isResolved) {
+        timerHTML = `<div class="ticket-timer-box timer-resolved"><i class="fa-solid fa-circle-check"></i> RESOLVED</div>`;
+      } else {
+        const remaining = t.deadline - Date.now();
+        if (remaining <= 0) {
+          timerHTML = `<div class="ticket-timer-box" style="background: rgba(231,76,60,0.25); color: #ff8b80;"><i class="fa-solid fa-circle-exclamation"></i> SLA BREACHED</div>`;
+        } else {
+          // Format remaining time
+          const hours = Math.floor(remaining / (1000 * 60 * 60));
+          const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+          const secs = Math.floor((remaining % (1000 * 60)) / 1000);
+          
+          const pad = (num) => String(num).padStart(2, '0');
+          timerHTML = `<div class="ticket-timer-box"><i class="fa-solid fa-clock"></i> ${pad(hours)}:${pad(mins)}:${pad(secs)}</div>`;
+        }
+      }
+
+      return `
+        <div class="ticket-card border-${t.priority}">
+          <div class="ticket-card-header">
+            <span class="ticket-card-title">${t.subject}</span>
+            <span class="faq-badge badge-helpdesk">${t.priority.toUpperCase()}</span>
+          </div>
+          <div class="ticket-meta-row">
+            <span>Customer: ${t.customer}</span>
+            <span>Ticket ID: #${t.id}</span>
+            ${isResolved ? '' : `<button class="ticket-resolve-btn" onclick="resolveMockTicket(${t.id})"><i class="fa-solid fa-check"></i> Resolve</button>`}
+            ${timerHTML}
+          </div>
+        </div>
+      `;
+    }).join('');
+  };
+
+  // Make resolve function available globally
+  window.resolveMockTicket = (id) => {
+    const ticket = mockTickets.find(t => t.id === id);
+    if (ticket) {
+      ticket.status = "Resolved";
+      renderTickets();
+    }
+  };
+
+  submitBtn.addEventListener('click', () => {
+    const subject = subjectInput.value.trim();
+    if (!subject) return;
+
+    const customerText = customerSelect.options[customerSelect.selectedIndex].text;
+    const priority = prioritySelect.value;
+    
+    // Map SLA levels
+    let duration = 48 * 60 * 60 * 1000; // Low: 48h
+    if (priority === 'critical') duration = 2 * 60 * 60 * 1000; // 2h
+    if (priority === 'high') duration = 6 * 60 * 60 * 1000; // 6h
+    if (priority === 'medium') duration = 24 * 60 * 60 * 1000; // 24h
+
+    const newTicket = {
+      id: Math.floor(100 + Math.random() * 900),
+      customer: customerText,
+      subject: subject,
+      priority: priority,
+      status: "In Progress",
+      deadline: Date.now() + duration
+    };
+
+    mockTickets.unshift(newTicket);
+    subjectInput.value = '';
+    renderTickets();
+  });
+
+  // Run countdown ticker loop
+  setInterval(renderTickets, 1000);
+  renderTickets();
+}
+
+// 10. E-Commerce Webhook Sync Log Simulator Console
+function initECommerceSimulator() {
+  const triggerBtn = document.getElementById('btn-simulate-checkout');
+  const consoleEl = document.getElementById('ecommerce-terminal');
+
+  if (!triggerBtn || !consoleEl) return;
+
+  const logLines = [
+    { text: "[15:40:02] HTTP POST webhook received from storefront: /api/webhooks/order-completed", delay: 100 },
+    { text: "[15:40:03] Parsing checkout JSON payload context...", delay: 600 },
+    { text: "{\n  \"event\": \"checkout.completed\",\n  \"customer\": { \"id\": 8, \"email\": \"jane.doe@cvsu.edu.ph\" },\n  \"items\": [ { \"product_id\": 12, \"sku\": \"SKU-MINT-88\", \"qty\": 2 } ]\n}", delay: 1200, isJson: true },
+    { text: "[15:40:04] Fetching product and category configuration details...", delay: 2000 },
+    { text: "SQL: SELECT product_id, sku, base_price FROM Products WHERE product_id = 12;", delay: 2300, isSql: true },
+    { text: "[15:40:04] Inserting new E-Commerce Sales Order row...", delay: 2900 },
+    { text: "SQL: INSERT INTO Sales_Orders (customer_id, status) VALUES (8, 'Pending');", delay: 3200, isSql: true },
+    { text: "[15:40:05] Querying warehouse stock levels inside WMS...", delay: 3800 },
+    { text: "SQL: SELECT quantity FROM Inventory_Locations WHERE product_id = 12 AND warehouse_id = 1;", delay: 4100, isSql: true },
+    { text: "[15:40:06] Stock verified (quantity: 8 >= order_qty: 2). Allocating inventory...", delay: 4800 },
+    { text: "SQL: UPDATE Inventory_Locations SET quantity = quantity - 2 WHERE product_id = 12 AND warehouse_id = 1;\nSQL: INSERT INTO Stock_Transactions (product_id, transaction_type, quantity) VALUES (12, 'Stock-out', 2);", delay: 5300, isSql: true },
+    { text: "[15:40:07] Scheduling outbound logistics transit shipment details...", delay: 6000 },
+    { text: "SQL: INSERT INTO Shipments (reference_type, reference_id, status) VALUES ('Outbound', 84, 'Pending');", delay: 6400, isSql: true },
+    { text: "[15:40:07] Webhook processed successfully. HTTP 200 OK returned.", delay: 7000 }
+  ];
+
+  triggerBtn.addEventListener('click', () => {
+    triggerBtn.disabled = true;
+    consoleEl.innerHTML = '';
+    
+    logLines.forEach(line => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.className = 'terminal-line';
+        
+        if (line.isJson) {
+          div.style.color = '#f1c40f';
+          div.style.fontFamily = 'monospace';
+          div.style.paddingLeft = '15px';
+        } else if (line.isSql) {
+          div.style.color = '#3498db';
+          div.style.fontFamily = 'monospace';
+          div.style.paddingLeft = '10px';
+        }
+        
+        div.textContent = line.text;
+        consoleEl.appendChild(div);
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+
+        if (line.delay === 7000) {
+          triggerBtn.disabled = false;
+        }
+      }, line.delay);
+    });
+  });
+}
+
+// 11. RBAC Simulator & Auditor Engine
+function initRBACSimulator() {
+  const roleSelect = document.getElementById('rbac-role-select');
+  const cardTitle = document.getElementById('rbac-card-title');
+  const cardDesc = document.getElementById('rbac-card-desc');
+  const dutiesList = document.getElementById('rbac-duties-list');
+  const gridContainer = document.getElementById('rbac-permissions-grid');
+
+  // Auditor Elements
+  const auditRoleSelect = document.getElementById('rbac-auditor-role-select');
+  const auditActionSelect = document.getElementById('rbac-auditor-action-select');
+  const auditBtn = document.getElementById('btn-run-rbac-audit');
+  const auditBadge = document.getElementById('rbac-audit-result-badge');
+  const auditTerminal = document.getElementById('rbac-terminal');
+
+  if (!roleSelect) return;
+
+  const modulesMap = {
+    core: "Core Master Data",
+    proc: "Procurement & Purchase",
+    wms: "Inventory & WMS",
+    scm: "Supply Chain / Logistics",
+    help: "Helpdesk / Support",
+    ecom: "E-Commerce Integrations",
+    bi: "Business Intelligence"
+  };
+
+  const updateRoleDisplay = (roleKey) => {
+    const role = rbacRoles[roleKey];
+    if (!role) return;
+
+    if (cardTitle) cardTitle.textContent = role.title;
+    if (cardDesc) cardDesc.textContent = role.desc;
+    
+    // Render duties
+    if (dutiesList) {
+      dutiesList.innerHTML = role.duties.map(d => `
+        <li>
+          <i class="fa-solid fa-circle-check"></i>
+          <span>${d}</span>
+        </li>
+      `).join('');
+    }
+
+    // Render permission badges grid with full spelled out titles
+    if (gridContainer) {
+      gridContainer.innerHTML = Object.keys(role.perms).map(moduleKey => {
+        const permValue = role.perms[moduleKey];
+        let badgeClass = 'badge-none';
+        
+        if (permValue.startsWith('Full Access')) {
+          badgeClass = 'badge-full';
+        } else if (permValue.startsWith('Read & Write')) {
+          badgeClass = 'badge-rw';
+        } else if (permValue.startsWith('Read-Only')) {
+          badgeClass = 'badge-r';
+        }
+
+        return `
+          <div class="permission-grid-item">
+            <span class="module-name">${modulesMap[moduleKey]}</span>
+            <span class="perm-badge ${badgeClass}">${permValue}</span>
+          </div>
+        `;
+      }).join('');
+    }
+  };
+
+  roleSelect.addEventListener('change', (e) => {
+    updateRoleDisplay(e.target.value);
+  });
+
+  // RBAC Dynamic Auditor Logic
+  if (auditBtn && auditTerminal) {
+    // Exact mapping of role authorizations
+    const auditMap = {
+      superadmin: {
+        CREATE_REQUISITION: true, APPROVE_PO: true, LOG_STOCK_IN: true, UPDATE_WMS_ZONES: true, SYNC_ECOM_CATALOG: true, RESOLVE_SLA_TICKET: true, VIEW_SYSTEM_AUDIT_LOGS: true
+      },
+      employee: {
+        CREATE_REQUISITION: true, APPROVE_PO: false, LOG_STOCK_IN: false, UPDATE_WMS_ZONES: false, SYNC_ECOM_CATALOG: false, RESOLVE_SLA_TICKET: true, VIEW_SYSTEM_AUDIT_LOGS: false
+      },
+      supportrep: {
+        CREATE_REQUISITION: false, APPROVE_PO: false, LOG_STOCK_IN: false, UPDATE_WMS_ZONES: false, SYNC_ECOM_CATALOG: false, RESOLVE_SLA_TICKET: true, VIEW_SYSTEM_AUDIT_LOGS: false
+      },
+      wmsmgr: {
+        CREATE_REQUISITION: false, APPROVE_PO: false, LOG_STOCK_IN: true, UPDATE_WMS_ZONES: true, SYNC_ECOM_CATALOG: true, RESOLVE_SLA_TICKET: false, VIEW_SYSTEM_AUDIT_LOGS: false
+      },
+      wmsoperator: {
+        CREATE_REQUISITION: false, APPROVE_PO: false, LOG_STOCK_IN: true, UPDATE_WMS_ZONES: false, SYNC_ECOM_CATALOG: false, RESOLVE_SLA_TICKET: false, VIEW_SYSTEM_AUDIT_LOGS: false
+      },
+      procspecialist: {
+        CREATE_REQUISITION: true, APPROVE_PO: true, LOG_STOCK_IN: true, UPDATE_WMS_ZONES: false, SYNC_ECOM_CATALOG: false, RESOLVE_SLA_TICKET: false, VIEW_SYSTEM_AUDIT_LOGS: false
+      },
+      ecomadmin: {
+        CREATE_REQUISITION: false, APPROVE_PO: false, LOG_STOCK_IN: true, UPDATE_WMS_ZONES: false, SYNC_ECOM_CATALOG: true, RESOLVE_SLA_TICKET: false, VIEW_SYSTEM_AUDIT_LOGS: false
+      }
+    };
+
+    auditBtn.addEventListener('click', () => {
+      const role = auditRoleSelect.value;
+      const action = auditActionSelect.value;
+      const roleText = auditRoleSelect.options[auditRoleSelect.selectedIndex].text;
+      const actionText = auditActionSelect.options[auditActionSelect.selectedIndex].text;
+
+      const isGranted = !!(auditMap[role] && auditMap[role][action]);
+      const now = new Date().toLocaleTimeString();
+
+      // Render Badge
+      auditBadge.style.display = 'flex';
+      if (isGranted) {
+        auditBadge.className = 'rbac-result-badge granted';
+        auditBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> Granted`;
+      } else {
+        auditBadge.className = 'rbac-result-badge denied';
+        auditBadge.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Denied`;
+      }
+
+      // Add Terminal Log Line
+      const logLine = document.createElement('div');
+      logLine.style.marginBottom = '6px';
+      
+      if (isGranted) {
+        logLine.innerHTML = `<span style="color:#8e9a8f;">[${now}]</span> <span style="color:#2ecc71;">[GRANTED]</span> ${roleText} requested "${actionText}" -> Valid junction mapping confirmed. Log trace written.`;
+      } else {
+        logLine.innerHTML = `<span style="color:#8e9a8f;">[${now}]</span> <span style="color:#e74c3c;">[DENIED]</span> ${roleText} requested "${actionText}" -> Access denied. Missing permission_id maps in Role_Permissions table.`;
+      }
+
+      auditTerminal.appendChild(logLine);
+      auditTerminal.scrollTop = auditTerminal.scrollHeight;
+    });
+  }
+
+  // Load first role by default
+  updateRoleDisplay(roleSelect.value);
+}
+
+// 12. Tab Routing & Views Management (Walkthrough trigger support)
 function initTabs() {
   const navItems = document.querySelectorAll('.nav-item');
   const viewSections = document.querySelectorAll('.view-section');
@@ -364,7 +904,20 @@ function initTabs() {
   });
 }
 
-// 6. Mermaid Diagram Handler (Safe layout check)
+function initFlowchartTabs() {
+  const tabs = document.querySelectorAll('.flow-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const diagramKey = tab.getAttribute('data-diagram');
+      resetPanZoomState();
+      renderMermaidDiagram(diagramKey);
+    });
+  });
+}
+
+// 13. Mermaid Diagram Handler (Safe layout check & Walkthrough bind)
 let renderingDiagram = false;
 async function renderMermaidDiagram(key) {
   if (renderingDiagram) return;
@@ -373,7 +926,7 @@ async function renderMermaidDiagram(key) {
   const container = document.getElementById('mermaid-container');
   const code = flowcharts[key];
   
-  container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-circle-notch fa-spin"></i> Rendering Vector Graphics...</div>`;
+  container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-circle-notch fa-spin text-success"></i> Rendering Vector Graphics...</div>`;
   
   setTimeout(async () => {
     try {
@@ -391,6 +944,11 @@ async function renderMermaidDiagram(key) {
       await window.mermaid.run({
         nodes: [document.getElementById(id)]
       });
+
+      // Start the walkthrough steps guide for this diagram if configured
+      if (window.triggerWalkthroughStart) {
+        window.triggerWalkthroughStart(key);
+      }
     } catch (err) {
       console.error("Mermaid Render Error:", err);
       container.innerHTML = `<div class="error-box" style="color: var(--color-danger); padding: 20px;"><i class="fa-solid fa-triangle-exclamation"></i> Rendering failed. Mermaid syntax is compiling on GitHub natively.</div>`;
@@ -400,20 +958,7 @@ async function renderMermaidDiagram(key) {
   }, 50);
 }
 
-function initFlowchartTabs() {
-  const tabs = document.querySelectorAll('.flow-tab');
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const diagramKey = tab.getAttribute('data-diagram');
-      resetPanZoomState();
-      renderMermaidDiagram(diagramKey);
-    });
-  });
-}
-
-// 7. FAQ Renderer (Integrated)
+// 14. FAQ Renderer (Integrated)
 function renderFAQs(faqs) {
   const container = document.getElementById('faq-accordion-container');
   if (!container) return;
@@ -469,7 +1014,7 @@ function renderFAQs(faqs) {
   });
 }
 
-// 8. Documentation Center & Unified Search
+// 15. Documentation Center & Unified Search
 function initDocsAndSearchEngine() {
   const tabs = document.querySelectorAll('.doc-tab');
   const panels = document.querySelectorAll('.doc-panel');
@@ -580,76 +1125,7 @@ function initDocsAndSearchEngine() {
   renderFAQs(faqData);
 }
 
-// 9. RBAC Simulator Engine (Spells out permissions in full)
-function initRBACSimulator() {
-  const roleSelect = document.getElementById('rbac-role-select');
-  const cardTitle = document.getElementById('rbac-card-title');
-  const cardDesc = document.getElementById('rbac-card-desc');
-  const dutiesList = document.getElementById('rbac-duties-list');
-  const gridContainer = document.getElementById('rbac-permissions-grid');
-
-  if (!roleSelect) return;
-
-  const modulesMap = {
-    core: "Core Master Data",
-    proc: "Procurement & Purchase",
-    wms: "Inventory & WMS",
-    scm: "Supply Chain / Logistics",
-    help: "Helpdesk / Support",
-    ecom: "E-Commerce Integrations",
-    bi: "Business Intelligence"
-  };
-
-  const updateRoleDisplay = (roleKey) => {
-    const role = rbacRoles[roleKey];
-    if (!role) return;
-
-    if (cardTitle) cardTitle.textContent = role.title;
-    if (cardDesc) cardDesc.textContent = role.desc;
-    
-    // Render duties
-    if (dutiesList) {
-      dutiesList.innerHTML = role.duties.map(d => `
-        <li>
-          <i class="fa-solid fa-circle-check"></i>
-          <span>${d}</span>
-        </li>
-      `).join('');
-    }
-
-    // Render permission badges grid with full spelled out titles
-    if (gridContainer) {
-      gridContainer.innerHTML = Object.keys(role.perms).map(moduleKey => {
-        const permValue = role.perms[moduleKey];
-        let badgeClass = 'badge-none';
-        
-        if (permValue.startsWith('Full Access')) {
-          badgeClass = 'badge-full';
-        } else if (permValue.startsWith('Read & Write')) {
-          badgeClass = 'badge-rw';
-        } else if (permValue.startsWith('Read-Only')) {
-          badgeClass = 'badge-r';
-        }
-
-        return `
-          <div class="permission-grid-item">
-            <span class="module-name">${modulesMap[moduleKey]}</span>
-            <span class="perm-badge ${badgeClass}">${permValue}</span>
-          </div>
-        `;
-      }).join('');
-    }
-  };
-
-  roleSelect.addEventListener('change', (e) => {
-    updateRoleDisplay(e.target.value);
-  });
-
-  // Load first role by default
-  updateRoleDisplay(roleSelect.value);
-}
-
-// 10. Initialization orchestrator (Handles race conditions with ESM script loading)
+// 16. Initialization orchestrator (Handles race conditions with ESM script loading)
 let mermaidInitialized = false;
 
 function initApp() {
@@ -670,6 +1146,10 @@ function runInitialization() {
   initTabs();
   initFlowchartTabs();
   initPanZoomEngine();
+  initWalkthroughEngine();
+  initSQLPlayground();
+  initTicketingSandbox();
+  initECommerceSimulator();
   initDocsAndSearchEngine();
   initRBACSimulator();
   

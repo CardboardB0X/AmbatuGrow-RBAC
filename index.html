@@ -27,8 +27,8 @@
         primaryColor: '#1e293b',
         primaryTextColor: '#f8fafc',
         primaryBorderColor: '#475569',
-        lineColor: '#6366f1',
-        secondaryColor: '#3b82f6',
+        lineColor: '#2ecc71',
+        secondaryColor: '#27ae60',
         tertiaryColor: '#1e293b'
       }
     });
@@ -82,7 +82,7 @@
           <p id="current-view-subtitle">Interactive process explorer and system design documentation</p>
         </div>
         <div class="header-badge">
-          <i class="fa-solid fa-circle"></i>
+          <i class="fa-solid fa-circle text-success"></i>
           <span>Production Ready</span>
         </div>
       </header>
@@ -184,6 +184,26 @@
                 <!-- Rendered Dynamically via JS -->
               </div>
             </div>
+
+            <!-- Walkthrough Guide Panel -->
+            <div class="flow-walkthrough-panel">
+              <div class="walkthrough-header">
+                <h4>Guided Step Walk</h4>
+                <span id="walkthrough-step-indicator">Step 0/0</span>
+              </div>
+              <div class="walkthrough-step-card">
+                <h5 id="walkthrough-step-title">Select Flow</h5>
+                <p id="walkthrough-step-desc">Select a specific flowchart (Procurement, Inventory, or Helpdesk) to begin the interactive step-by-step systems walk.</p>
+              </div>
+              <div class="walkthrough-db-logs" id="walkthrough-db-logs-panel">
+                [SYSTEM IDLE] Select sub-process to audit SQL transactions.
+              </div>
+              <div class="walkthrough-controls">
+                <button class="walkthrough-btn" id="btn-walk-prev" disabled><i class="fa-solid fa-arrow-left"></i> Back</button>
+                <button class="walkthrough-btn" id="btn-walk-next" disabled>Next <i class="fa-solid fa-arrow-right"></i></button>
+              </div>
+            </div>
+
           </div>
         </section>
         
@@ -265,6 +285,20 @@
                     <li><i class="fa-solid fa-circle-check"></i> <strong>WMS Stock-out</strong>: Operators retrieve the items, package them, decrement inventory locations, and log a 'Stock-out' transaction.</li>
                     <li><i class="fa-solid fa-circle-check"></i> <strong>Outbound Dispatch</strong>: The logistics carrier delivers the items and flags the Shipment status to 'Delivered' to complete the operational cycle.</li>
                   </ul>
+                </div>
+              </div>
+
+              <!-- E-Commerce Sync Terminal Simulator -->
+              <div class="ecommerce-sync-sandbox">
+                <div class="ecommerce-control-bar">
+                  <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <h4 style="font-family: var(--font-headings); font-weight: 700; color: var(--accent-primary);"><i class="fa-solid fa-plug"></i> E-Commerce Webhook Sync Simulator</h4>
+                    <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Simulate real-time storefront checkout events and audit webhook execution logs.</p>
+                  </div>
+                  <button class="sandbox-btn" id="btn-simulate-checkout" style="margin-left: auto;"><i class="fa-solid fa-bag-shopping"></i> Trigger Online Checkout</button>
+                </div>
+                <div class="terminal-console" id="ecommerce-terminal">
+[SYSTEM IDLE] Awaiting webstore purchase webhook trigger... Click "Trigger Online Checkout" to execute.
                 </div>
               </div>
             </div>
@@ -378,6 +412,23 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Database SQL Playground -->
+              <div class="sql-playground-card">
+                <div class="sql-selector-bar">
+                  <h4 style="font-family: var(--font-headings); font-weight: 700; color: var(--accent-primary);"><i class="fa-solid fa-code"></i> Systems Integration SQL Generator</h4>
+                  <select id="sql-playground-select" class="sandbox-select" style="margin-left: auto;">
+                    <option value="reorder">Fetch SKUs Below Reorder Threshold (WMS)</option>
+                    <option value="shipment">Track Outbound Logistics & Delivery Status (SCM)</option>
+                    <option value="tickets">List Open Critical Support Tickets (Helpdesk)</option>
+                    <option value="supplier">Show Preferred Supplier Catalog Rates (Procurement)</option>
+                  </select>
+                </div>
+                <div class="sql-code-display">
+                  <button class="sql-copy-btn" id="btn-sql-copy"><i class="fa-solid fa-copy"></i> Copy Query</button>
+                  <code id="sql-playground-code">-- SQL statement will render dynamically</code>
+                </div>
+              </div>
             </div>
             
             <!-- Docs Panel 4: Helpdesk & FAQs -->
@@ -393,9 +444,47 @@
                 <button class="filter-btn" data-category="ecommerce">E-Commerce</button>
               </div>
               
-              <!-- Accordion Cards Container -->
-              <div class="faq-accordion" id="faq-accordion-container">
-                <!-- Rendered Dynamically via JS -->
+              <div class="sandbox-split-grid">
+                <!-- Left Column: Form Submit Ticket -->
+                <div class="ticket-sandbox-form-card">
+                  <h4>Create Mock SLA Ticket</h4>
+                  <div class="sandbox-form-group">
+                    <label for="ticket-customer-select">Select Customer</label>
+                    <select id="ticket-customer-select" class="sandbox-select">
+                      <option value="1">Jane Doe (ID: 1)</option>
+                      <option value="2">John Smith (ID: 2)</option>
+                      <option value="3">CvSU Library Desk (ID: 3)</option>
+                    </select>
+                  </div>
+                  <div class="sandbox-form-group">
+                    <label for="ticket-priority-select">Priority / SLA Metric</label>
+                    <select id="ticket-priority-select" class="sandbox-select">
+                      <option value="critical">Critical (SLA: 2 hours)</option>
+                      <option value="high">High (SLA: 6 hours)</option>
+                      <option value="medium">Medium (SLA: 24 hours)</option>
+                      <option value="low">Low (SLA: 48 hours)</option>
+                    </select>
+                  </div>
+                  <div class="sandbox-form-group">
+                    <label for="ticket-subject-input">Incident Summary</label>
+                    <input type="text" id="ticket-subject-input" class="sandbox-input" placeholder="e.g. Package damaged in transit...">
+                  </div>
+                  <button class="sandbox-btn" id="btn-submit-ticket"><i class="fa-solid fa-ticket"></i> Open Ticket</button>
+                </div>
+                
+                <!-- Right Column: Live SLA Queue & Accordions -->
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                  <div class="live-tickets-panel">
+                    <h4>Active Support Tickets Queue (Real-Time SLAs)</h4>
+                    <div class="live-tickets-list" id="live-tickets-list">
+                      <!-- Rendered dynamically -->
+                    </div>
+                  </div>
+                  
+                  <div class="faq-accordion" id="faq-accordion-container" style="margin-top: 0;">
+                    <!-- Rendered Dynamically via JS -->
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -440,6 +529,48 @@
               </div>
             </div>
             
+          </div>
+
+          <!-- RBAC Permission Auditor Panel -->
+          <div class="glass-card rbac-auditor-panel">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h4 style="font-family: var(--font-headings); font-weight: 700; color: var(--accent-primary); margin: 0;"><i class="fa-solid fa-user-shield"></i> Security Permission Auditor</h4>
+              <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Audit authorization clearances dynamically by running mock operational requests.</p>
+            </div>
+            <div class="rbac-auditor-controls">
+              <div class="sandbox-form-group">
+                <label for="rbac-auditor-role-select">Select User Role</label>
+                <select id="rbac-auditor-role-select" class="sandbox-select">
+                  <option value="superadmin">Super Admin</option>
+                  <option value="employee">General Employee</option>
+                  <option value="supportrep">Customer Support Rep</option>
+                  <option value="wmsmgr">WMS Manager</option>
+                  <option value="wmsoperator">Warehouse Operator</option>
+                  <option value="procspecialist">Procurement Specialist</option>
+                  <option value="ecomadmin">E-Commerce Admin</option>
+                </select>
+              </div>
+              <div class="sandbox-form-group">
+                <label for="rbac-auditor-action-select">Requested System Action</label>
+                <select id="rbac-auditor-action-select" class="sandbox-select">
+                  <option value="CREATE_REQUISITION">Create Requisition (procurement)</option>
+                  <option value="APPROVE_PO">Approve Purchase Order (procurement)</option>
+                  <option value="LOG_STOCK_IN">Log Stock-In Receipt (wms)</option>
+                  <option value="UPDATE_WMS_ZONES">Modify Warehouse Configuration (wms)</option>
+                  <option value="SYNC_ECOM_CATALOG">Update Storefront Catalog (ecommerce)</option>
+                  <option value="RESOLVE_SLA_TICKET">Close Incident Ticket (helpdesk)</option>
+                  <option value="VIEW_SYSTEM_AUDIT_LOGS">Access Security System Logs (core)</option>
+                </select>
+              </div>
+              <button class="sandbox-btn" id="btn-run-rbac-audit" style="align-self: flex-end;"><i class="fa-solid fa-shield-halved"></i> Audit Request</button>
+              
+              <div class="rbac-result-badge granted" id="rbac-audit-result-badge" style="display: none;">
+                <i class="fa-solid fa-circle-check"></i> Granted
+              </div>
+            </div>
+            <div class="rbac-terminal-console" id="rbac-terminal">
+[AUDITOR IDLE] Awaiting verification requests... Select a role and request action above.
+            </div>
           </div>
         </section>
         
