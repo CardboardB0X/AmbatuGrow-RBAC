@@ -44,98 +44,184 @@ const flowcharts = {
 
   procurement: `flowchart TD
     classDef proc fill:#2b6cb0,stroke:#3182ce,stroke-width:2px,color:#fff;
+    classDef ext fill:#718096,stroke:#4a5568,stroke-width:2px,color:#fff;
     classDef decision fill:#d69e2e,stroke:#ecc94b,stroke-width:2px,color:#1a202c;
 
-    Step1([Start: Dept Needs Materials]):::proc --> Step2[Employee Creates Purchase Requisition]:::proc
-    Step2 --> Step3{Manager Review}:::decision
+    WMS_Reorder([WMS Reorder Alert]):::ext --> F1_PR
     
-    Step3 -->|Rejected| Step3R[Status = 'Rejected']:::proc --> Step2
-    Step3 -->|Approved| Step4[Status = 'Approved']:::proc
-    
-    Step4 --> Step5{Generation Type}:::decision
-    Step5 -->|Manual Execution| Step5M[Procurement Specialist Selects Supplier]:::proc
-    Step5 -->|Automated Trigger| Step5A[System Pulls Preferred Supplier from Product_Suppliers]:::proc
-    
-    Step5M --> Step6[Generate Purchase Order & Insert PO_Items]:::proc
-    Step5A --> Step6
-    
-    Step6 --> Step7[Set PO Status = 'Sent' & Dispatch to Vendor Portal]:::proc
-    Step7 --> Step8[Supplier Confirms PO Status = 'Confirmed']:::proc
-    Step8 --> Step9[Materials Arrive at Dock: Create Inbound Shipment]:::proc
-    
-    Step9 --> Step10[Record Goods Receipt & Execute Stock-in Log]:::proc
-    Step10 --> Step14([End Process: Inbound Items Logged]):::proc`,
+    subgraph F1 ["1. Requisition & Approval"]
+      F1_PR[Create Requisition PR - Status: Pending]:::proc --> F1_Approval{Manager Review}:::decision
+      F1_Approval -->|Rejected| F1_PR
+      F1_Approval -->|Approved| F1_Status[Set status = 'Approved']:::proc
+    end
+
+    subgraph F2 ["2. Supplier Management"]
+      F2_Supplier[Query Supplier Catalog & Pricing]:::proc
+    end
+
+    F1_Status --> F3_PO
+    F2_Supplier --> F3_PO
+
+    subgraph F3 ["3. Purchase Order Management"]
+      F3_PO[Generate Purchase Order PO]:::proc --> F3_Send[Send PO to Supplier - Status: Sent]:::proc
+      F3_Send --> F3_Track{PO Status Check}:::decision
+      F3_Track -->|Delivered| F4_Rec[Goods Arrival]:::proc
+      F3_Track -->|Cancelled| F3_PO
+    end
+
+    subgraph F4 ["4. Goods Receipt & Matching"]
+      F4_Rec --> F4_Match{3-Way Match: PO + Delivery Receipt + Invoice}:::decision
+      F4_Match -->|Mismatch| F4_Flag[Flag Issue & Halt Payment]:::proc
+      F4_Match -->|Match Confirmed| F4_Approve[Approve Payment & Close PO]:::proc
+    end
+
+    F4_Approve -->|Inbound stock-in| WMS_StockIn([WMS Stock-in Logs]):::ext
+    F3_Send -->|Inbound tracking| SCM_Inbound([SCM Inbound Tracking]):::ext`,
 
   inventory: `flowchart TD
     classDef inv fill:#2f855a,stroke:#38a169,stroke-width:2px,color:#fff;
+    classDef ext fill:#718096,stroke:#4a5568,stroke-width:2px,color:#fff;
     classDef decision fill:#d69e2e,stroke:#ecc94b,stroke-width:2px,color:#1a202c;
 
-    I1([Start: Material Flow Event]):::inv --> I2{Transaction Type}:::decision
-    
-    I2 -->|Supplier Delivery / Stock-In| I3[Verify SKU against active Product Catalog]:::inv
-    I3 --> I4[Identify Target Warehouse & Warehouse_Zones by Category]:::inv
-    I4 --> I5[Increment Quantity in Inventory_Locations Table]:::inv
-    I5 --> I6[Write Log Row to Stock_Transactions with Type 'Stock-in']:::inv
-    
-    I2 -->|Sales Fulfillment / Stock-Out| I7[Identify Item Batches / Check Expiration_Date]:::inv
-    I7 --> I8[Decrement Quantity in Inventory_Locations Table]:::inv
-    I8 --> I9[Write Log Row to Stock_Transactions with Type 'Stock-out']:::inv
-    
-    I2 -->|Warehouse Relocation / Transfer| I10[Deduct Balance from Source Location Node]:::inv
-    I10 --> I11[Add Balance to Destination Location Node]:::inv
-    I11 --> I12[Write Log Row to Stock_Transactions with Type 'Transfer']:::inv
-    
-    I6 --> I13[Evaluate Remaining Structural Inventory Balances]:::inv
-    I9 --> I13
-    I12 --> I13
-    
-    I13 --> I14{Is Balance Current Level <= min_quantity_threshold?}:::decision
-    I14 -->|No| I15([End: Inventory Maintained]):::inv
-    I14 -->|Yes| I16[Trigger Re-order Request Alert via System BI Module]:::inv
-    I16 --> I17([End: Automated Procurement Notification Dispatched]):::inv`,
+    Ecom_Sync([E-Commerce Checkout]):::ext --> F2_StockOut
+    Proc_Rec([Procurement Goods Receipt]):::ext --> F2_StockIn
+
+    subgraph F1_WMS ["1. Inventory Tracking"]
+      F1_Item[Catalog Item Detail SKU, Description]:::inv
+    end
+
+    subgraph F2_WMS ["2. Stock Transactions"]
+      F2_StockIn[Record Deliveries Stock-In]:::inv --> F2_Log[Maintain Transaction Log & History]:::inv
+      F2_StockOut[Log Sales Deductions Stock-Out]:::inv --> F2_Log
+      F2_Log --> F2_Expire[Verify Expiration Tracking]:::inv
+    end
+
+    F1_Item --> F3_Loc
+
+    subgraph F3_WMS ["3. Location Tracking"]
+      F3_Loc[Assign Items to Warehouse Zones/Locations]:::inv --> F3_Quant[Track Quantities per Warehouse]:::inv
+      F3_Quant --> F3_Transfer{Is Inter-Warehouse Transfer needed?}:::decision
+      F3_Transfer -->|Yes| F3_Exec[Execute Transfer & Log Movements]:::inv
+    end
+
+    F3_Quant --> F4_Alert
+
+    subgraph F4_WMS ["4. Reporting & Alerts"]
+      F4_Alert[Evaluate Min/Max Quantity Thresholds]:::inv --> F4_Check{Is Stock <= Min Threshold?}:::decision
+      F4_Check -->|Yes| F4_Notify[Generate Out-of-Stock Alert]:::inv
+    end
+
+    F4_Notify -->|Automate reorder trigger| Proc_PR([Procurement PR Entry]):::ext
+    F2_Log -->|Sync web availability| Ecom_Inventory([E-Commerce Inventory Sync]):::ext
+    F3_Exec -->|Log logistics tracking| SCM_Transfer([SCM Inter-Warehouse Transit]):::ext`,
 
   helpdesk: `flowchart TD
     classDef help fill:#6b46c1,stroke:#805ad5,stroke-width:2px,color:#fff;
+    classDef ext fill:#718096,stroke:#4a5568,stroke-width:2px,color:#fff;
     classDef decision fill:#d69e2e,stroke:#ecc94b,stroke-width:2px,color:#1a202c;
 
-    H1([Start: Post-Sale Incident Triggered]):::help --> H2[Instantiate Incident Log row in Tickets Table]:::help
-    H2 --> H3[Map Context Fields: customer_id, Optional order_id]:::help
-    H3 --> H4[Set Priority Configuration Level based on Severity]:::help
-    H4 --> H5[Apply SLA Rules Matrix for Target Resolution Timestamp]:::help
-    
-    H5 --> H6[Assign Ticket Ownership to Target Customer Support Agent]:::help
-    H6 --> H7[Set Ticket Status = 'In Progress']:::help
-    
-    H7 --> H8{Can Issue Be Resolved Directly via Knowledge Base / Self-Service?}:::decision
-    H8 -->|Yes| H9[Send Article Link & Resolution Instructions to Client]:::help --> H11
-    H8 -->|No| H10[Escalate to Specialized Technical / Warehouse Department]:::help --> H11
-    
-    H11 --> H12{Does Resolution Window Violate SLA Targets?}:::decision
-    H12 -->|Yes| H12Alert[Trigger Auto-Escalation Warning Alert to Operations Manager]:::help --> H13
-    H12 -->|No| H13[Apply System Patch / Refund / Item Replacement]:::help
-    
-    H13 --> H14[Update Ticket Status Value = 'Resolved']:::help
-    H14 --> H15[Gather User Feedback Metrics & Close Transaction Loop]:::help
-    H15 --> H16([End Process]):::help`,
+    Ecom_History([E-Commerce Cust History]):::ext --> F3_Comm
+    SCM_Track([SCM Shipment Transit]):::ext --> F1_Ticket
+
+    subgraph F1_HELP ["1. Ticket Management"]
+      F1_Ticket[Create Ticket - Customer or Manual]:::help --> F1_Assign[Assign to Support Agent]:::help
+      F1_Assign --> F1_Status[Track Status: Open, In Progress, Resolved, Closed]:::help
+    end
+
+    subgraph F2_HELP ["2. Self-Service Portal"]
+      F2_Portal[Search Database of Solutions & Articles]:::help --> F2_Rating{User Feedback}:::decision
+      F2_Rating -->|Helpful| F2_Resolve[Reduce Ticket Volume / Self-Resolution]:::help
+      F2_Rating -->|Not Helpful| F1_Ticket
+    end
+
+    subgraph F3_HELP ["3. Communication History"]
+      F3_Comm[Maintain Interactions: Email, Chat, Phone]:::help --> F3_FollowUp[Send Follow-Up Responses]:::help
+    end
+
+    F1_Status --> F4_SLA
+
+    subgraph F4_HELP ["4. SLA Tracking"]
+      F4_SLA[Set SLA Rules for Response & Resolution]:::help --> F4_Monitor[Monitor SLA compliance]:::help
+      F4_Monitor --> F4_Check{Is Ticket Overdue?}:::decision
+      F4_Check -->|Yes| F4_Escalate[Escalate Overdue Tickets Automatically]:::help
+      F4_Check -->|No| F4_Close[Resolve Ticket & Generate Report]:::help
+    end
+
+    F1_Ticket -->|Trace client purchase history| Ecom_Orders([E-Commerce Sales Orders]):::ext
+    F4_Escalate -->|Notify Operations Manager| Core_User([Core User Notifications]):::ext`,
 
   scm: `flowchart TD
     classDef scm fill:#0891b2,stroke:#0e7490,stroke-width:2px,color:#fff;
+    classDef ext fill:#718096,stroke:#4a5568,stroke-width:2px,color:#fff;
     classDef decision fill:#d69e2e,stroke:#ecc94b,stroke-width:2px,color:#1a202c;
 
-    S1([Start: Logistics Trigger]):::scm --> S2{Logistics Direction}:::decision
-    
-    S2 -->|Inbound: Supplier to Dock| S3[Read Approved Purchase Order Details]:::scm
-    S3 --> S4[Instantiate Inbound Shipment Log Row]:::scm
-    S4 --> S5[Carrier Dispatches Transit Code]:::scm
-    S5 --> S6[Goods Arrive at Dock: Verify & Close Inbound Loop]:::scm
-    S6 --> S12
-    
-    S2 -->|Outbound: Dock to Customer| S7[Read Confirmed Sales Order Details]:::scm
-    S7 --> S8[Instantiate Outbound Shipment Log Row]:::scm
-    S8 --> S9[Generate Tracking ID & Allocate Shipping Carrier]:::scm
-    S9 --> S10[Carrier Transit: Update Status = 'In Transit']:::scm
-    S10 --> S11[Delivery Receipt: Set Status = 'Delivered']:::scm
-    S11 --> S12([End Process: Logistics Logs Audited]):::scm`
+    Ecom_Sales([E-Commerce Orders]):::ext --> F1_Forecast
+    WMS_Levels([WMS Stock Quantities]):::ext --> F1_Forecast
+
+    subgraph F1_SCM ["1. Demand Forecasting"]
+      F1_Forecast[Analyze Past Sales & Usage]:::scm --> F1_Plan[Forecast Demand & Adjust Plans]:::scm
+    end
+
+    F1_Plan --> F2_Supplier
+
+    subgraph F2_SCM ["2. Procurement & Supplier Coord"]
+      F2_Supplier[Collaborate with Suppliers on Timelines]:::scm --> F2_Threshold{Is Stock below safety levels?}:::decision
+      F2_Threshold -->|Yes| F2_Auto[Automate order placement with Procurement]:::scm
+    end
+
+    subgraph F3_SCM ["3. Logistics & Transportation"]
+      F3_Logistics[Logistics Dispatch]:::scm --> F3_Route[Plan & Optimize Shipping Routes]:::scm
+      F3_Route --> F3_Transit{Shipment Type?}:::decision
+      F3_Transit -->|Inbound supplier deliveries| F3_Inbound[Track Inbound Shipments in Real Time]:::scm
+      F3_Transit -->|Outbound customer orders| F3_Outbound[Track Outbound Shipments in Real Time]:::scm
+    end
+
+    subgraph F4_SCM ["4. Distribution & Warehouse Coord"]
+      F4_Dist[Monitor Stock Levels across locations]:::scm --> F4_Allocate[Allocate Inventory to High-Demand Areas]:::scm
+      F4_Allocate --> F4_Transfer[Manage Inter-Warehouse Transfers]:::scm
+    end
+
+    F2_Auto -->|Send Purchase Order request| Proc_PO([Procurement PO Generation]):::ext
+    F3_Inbound -->|Update dock arrival| WMS_Dock([WMS Inbound Dock]):::ext
+    F3_Outbound -->|Sync package status| Help_Ticket([Helpdesk Support Ticket]):::ext
+    F4_Transfer -->|Execute physical stock movement| WMS_Move([WMS Location Transfer]):::ext`,
+
+  ecommerce: `flowchart TD
+    classDef ecom fill:#059669,stroke:#047857,stroke-width:2px,color:#fff;
+    classDef ext fill:#718096,stroke:#4a5568,stroke-width:2px,color:#fff;
+    classDef decision fill:#d69e2e,stroke:#ecc94b,stroke-width:2px,color:#1a202c;
+
+    WMS_PIM([WMS Product Catalog]):::ext --> F3_PIM
+    WMS_Stock([WMS Location Stock levels]):::ext --> F2_StockUpdate
+
+    subgraph F3_ECOM ["3. Product Catalog (PIM)"]
+      F3_PIM[Manage Product Catalog in ERP]:::ecom --> F3_Sync[Sync Products & Prices to Webstore]:::ecom
+    end
+
+    subgraph F1_ECOM ["1. Real-Time Order Sync"]
+      Ecom_Checkout[Customer Places Order Online]:::ecom --> F1_Sync[Transfer Order Details to ERP]:::ecom
+      F1_Sync --> F1_Assign[Assign Unique Order ID & Set Status]:::ecom
+    end
+
+    F1_Assign --> F2_StockUpdate
+
+    subgraph F2_ECOM ["2. Inventory Updates"]
+      F2_StockUpdate[Automatically update stock quantities]:::ecom --> F2_Verify{Is Stock available?}:::decision
+      F2_Verify -->|No| F2_Hold[Set Order Status = On Hold]:::ecom
+      F2_Verify -->|Yes| F2_Fulfill[Proceed to Fulfillment & Set Low Stock Alerts]:::ecom
+    end
+
+    F1_Assign --> F4_Data
+
+    subgraph F4_ECOM ["4. Customer & Payment Sync"]
+      F4_Data[Record Customer info from E-Commerce to ERP]:::ecom --> F4_Gateway[Integrate Payment Gateways Reconciliation]:::ecom
+      F4_Gateway --> F4_History[Enable Customer history tracking]:::ecom
+    end
+
+    F2_Hold -->|Trigger supplier ordering| Proc_PR([Procurement PR Alert]):::ext
+    F2_Fulfill -->|Log outbound logistics| SCM_Ship([SCM Outbound Shipping]):::ext
+    F2_Fulfill -->|Deduct inventory counts| WMS_StockOut([WMS Stock-Out Logs]):::ext
+    F4_History -->|Link order context to tickets| Help_Context([Helpdesk Customer History]):::ext`
 };
 
 // 2. FAQ Portal Database (Integrated into Documentation view)
@@ -409,6 +495,28 @@ const walkthroughSteps = {
       title: "4. Confirm Delivery Receipt",
       desc: "The customer receives the package. The carrier reports a success webhook, setting the shipment to 'Delivered' and closing the sales order lifecycle.",
       db: "UPDATE Shipments \nSET status = 'Delivered', \n    delivered_at = NOW() \nWHERE shipment_id = 112;\n\nUPDATE Sales_Orders \nSET status = 'Completed' \nWHERE order_id = 84;"
+    }
+  ],
+  ecommerce: [
+    {
+      title: "1. Real-Time Order Sync",
+      desc: "A customer checks out online. Storefront webhooks trigger our ERP API, importing customer metadata and creating an active Sales Order row.",
+      db: "INSERT INTO Sales_Orders (customer_id, status)\nVALUES (8, 'Pending');\n\nINSERT INTO Sales_Order_Items (order_id, product_id, quantity, unit_price)\nVALUES (84, 12, 2.00, 450.00);"
+    },
+    {
+      title: "2. Inventory & Stock Check",
+      desc: "The database queries WMS locations to confirm inventory availability. If stock is low, the order is marked 'On Hold' and triggers a Procurement reorder alert.",
+      db: "SELECT quantity FROM Inventory_Locations \nWHERE product_id = 12 AND warehouse_id = 1;\n\n-- [Stock Check: 8.00 >= Ordered: 2.00]"
+    },
+    {
+      title: "3. Update Storefront Stock (PIM)",
+      desc: "The system deducts the reserved items from physical inventory and dispatches updated stock counts back to the E-Commerce store to prevent overselling.",
+      db: "UPDATE Inventory_Locations \nSET quantity = quantity - 2.00 \nWHERE product_id = 12 AND warehouse_id = 1;\n\nINSERT INTO Stock_Transactions (product_id, transaction_type, quantity)\nVALUES (12, 'Stock-out', 2.00);"
+    },
+    {
+      title: "4. Customer Profile & Payment Sync",
+      desc: "Payment gateways authorize credit card logs. The ERP matches payment invoices, creates an outbound logistics transit track in SCM, and links customer profiles.",
+      db: "INSERT INTO Shipments (reference_type, reference_id, status)\nVALUES ('Outbound', 84, 'Pending');\n\nINSERT INTO Invoices (order_id, amount, status)\nVALUES (84, 900.00, 'Paid');"
     }
   ]
 };
