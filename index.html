@@ -280,7 +280,13 @@
                   <ul>
                     <li><i class="fa-solid fa-circle-check"></i> <strong>Step 1: Requesting (Requisition)</strong> - An employee submits a list of needed supplies. The request starts as 'Pending' status.</li>
                     <li><i class="fa-solid fa-circle-check"></i> <strong>Step 2: Sign-Off (Approval)</strong> - The department manager checks budgets and approves the request, moving it to 'Approved' status.</li>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>Step 3: Contract (Purchase Order)</strong> - A specialist selects the preferred supplier and dispatches a formal PO contract detailing SKU pricing.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Step 3: Creating and Dispatching the Purchase Order (PO)</strong> - Once a request is approved, a formal PO contract must be generated and dispatched:
+                      <ul style="margin-top: 6px; padding-left: 16px;">
+                        <li><i class="fa-solid fa-angle-right"></i> <strong>Manual PO Creation</strong>: A Procurement Specialist reviews the approved requisition, queries the <code>Product_Suppliers</code> catalog to identify the preferred vendor, extracts contract prices, and manually compiles the PO.</li>
+                        <li><i class="fa-solid fa-angle-right"></i> <strong>Automated PO Creation</strong>: If WMS stock levels drop below safety thresholds, the system automatically pulls the SKU's preferred vendor and pricing from the database, bypassing manual entry to instantly generate a PO.</li>
+                        <li><i class="fa-solid fa-angle-right"></i> <strong>Issuance & Tracking</strong>: The PO is sent to the vendor portal, shifting status from <code>Sent</code> to <code>Confirmed</code> once accepted.</li>
+                      </ul>
+                    </li>
                     <li><i class="fa-solid fa-circle-check"></i> <strong>Step 4: Unloading (Goods Receipt)</strong> - The vendor delivers boxes to the dock. Warehouse operators verify counts, log a 'Stock-In' transaction, and WMS increments inventory balances.</li>
                   </ul>
                 </div>
