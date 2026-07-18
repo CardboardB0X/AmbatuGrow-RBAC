@@ -1,6 +1,7 @@
 # 🌐 End-to-End Cross-Functional System Orchestration
 
-This architecture map displays how data transitions horizontally across system boundaries, tracking the operational flow across Procurement, WMS, Supply Chain (SCM), E-Commerce, and Helpdesk.
+> [!NOTE]
+> **Plain English Summary**: This blueprint acts as a high-level map showing how data moves across system boundaries. Instead of departments working in isolation, information flows automatically. For example, when a checkout is completed on the web store (E-Commerce), WMS instantly decrements stock, SCM dispatches logistics delivery tags, and any issues trigger linked support tickets inside the Helpdesk automatically.
 
 ---
 

@@ -306,67 +306,67 @@ WHERE ps.is_preferred = 1;`
 const walkthroughSteps = {
   procurement: [
     {
-      title: "1. Create Purchase Requisition (PR)",
-      desc: "An employee logs a material request inside the department dashboard, generating a Requisition row with status 'Pending'.",
+      title: "1. Requesting Supplies (PR)",
+      desc: "An employee needs supplies (like catalog items) and submits a Requisition. Think of this as putting items in a corporate shopping cart that starts as 'Pending' and requires manager sign-off.",
       db: "INSERT INTO Purchase_Requisitions (req_number, employee_id, status)\nVALUES ('PR-2026-001', 12, 'Pending');"
     },
     {
-      title: "2. Manager Approval Gate",
-      desc: "The Department Manager reviews the request against active budgets and signs off, updating status to 'Approved'.",
+      title: "2. Manager Sign-Off (Approval)",
+      desc: "The department manager receives an alert. They check active budgets and approve the request. This officially authorizes the purchase, changing the status to 'Approved'.",
       db: "UPDATE Purchase_Requisitions \nSET status = 'Approved', approved_by = 4 \nWHERE req_id = 45;"
     },
     {
-      title: "3. Generate Purchase Order (PO)",
-      desc: "The Procurement Specialist assigns the supplier (pulling defaults from Product_Suppliers) and dispatches the PO.",
+      title: "3. Dispatched Purchase Order (PO)",
+      desc: "A purchasing specialist takes the approved request, selects the preferred supplier (pulling defaults from Product_Suppliers), and dispatches a formal PO. This is a legally binding contract sent to the supplier.",
       db: "INSERT INTO Purchase_Orders (po_number, supplier_id, status)\nVALUES ('PO-2026-987', 5, 'Sent');\n\nINSERT INTO PO_Items (po_id, product_id, quantity)\nVALUES (112, 18, 50.00);"
     },
     {
-      title: "4. Goods Inbound Dock Stock-In",
-      desc: "Supplier delivers the items. Warehouse Operators verify the SKUs, increment locations, and write Stock-In logs.",
+      title: "4. Dock Receiving & Stock-In",
+      desc: "Supplier delivers the boxes to the loading dock. Warehouse operators verify SKU counts, record an inbound Shipment, and update physical stock levels in the WMS, logging a 'Stock-In' audit trail.",
       db: "INSERT INTO Shipments (reference_type, reference_id, status)\nVALUES ('Inbound', 112, 'Received');\n\nUPDATE Inventory_Locations \nSET quantity = quantity + 50.00 \nWHERE warehouse_id = 2 AND product_id = 18;\n\nINSERT INTO Stock_Transactions (product_id, transaction_type, quantity)\nVALUES (18, 'Stock-in', 50.00);"
     }
   ],
   inventory: [
     {
-      title: "1. Verify Product Catalog SKU",
-      desc: "A WMS operator scans a box on the floor. The system queries the Products master table to verify metadata configurations.",
+      title: "1. Scanning the SKU barcode",
+      desc: "A warehouse clerk scans a product barcode. The WMS queries the Products catalog to verify the item is registered and grabs its safety stock settings.",
       db: "SELECT product_id, sku, min_quantity_threshold \nFROM Products \nWHERE sku = 'SKU-MINT-88';"
     },
     {
-      title: "2. Zone Allocation Mapping",
-      desc: "The system matches the product's storage requirements to active warehouse layouts to identify the correct zone coordinates.",
+      title: "2. Locating the Storage Zone",
+      desc: "The system matches the product's storage requirements with active warehouse layouts to identify the correct zone coordinates (e.g. Cold storage, Bulk racks).",
       db: "SELECT zone_id, zone_name \nFROM Warehouse_Zones \nWHERE warehouse_id = 1 AND category = 'Standard';"
     },
     {
-      title: "3. Log Transaction & Update Stock",
-      desc: "The operator executes the movement, updating physical zone counts and writing transactional audits.",
+      title: "3. Updating Stock & Logging History",
+      desc: "The clerk places the items in the bin. The database increments the inventory level for that specific zone and writes a 'Stock-in' log to record who did it and when.",
       db: "UPDATE Inventory_Locations \nSET quantity = quantity + 15.00 \nWHERE inventory_id = 82;\n\nINSERT INTO Stock_Transactions (product_id, transaction_type, quantity)\nVALUES (12, 'Stock-in', 15.00);"
     },
     {
-      title: "4. Safety Threshold evaluation",
-      desc: "Database constraints calculate remaining stock. If stock drops below safety limits, the system triggers a reorder alert.",
+      title: "4. Safety Threshold Evaluation",
+      desc: "The system automatically reviews the remaining quantity. If it drops below the safety threshold, it fires an alert notifying procurement to reorder, preventing out-of-stock issues.",
       db: "SELECT quantity, min_quantity_threshold \nFROM Inventory_Locations \nJOIN Products USING (product_id) \nWHERE product_id = 12;\n\n-- [Alert Triggered: Current Stock 4.00 <= Threshold 5.00]"
     }
   ],
   helpdesk: [
     {
-      title: "1. Log Ticket Incident",
-      desc: "A customer reports a post-sale shipment issue, creating a new incident Ticket linked to the Customer and Order profiles.",
+      title: "1. Submitting a Support Ticket",
+      desc: "A customer reports a post-sale shipment issue (like a damaged parcel), creating a new Ticket. The system automatically links their profile and original Order ID for full context.",
       db: "INSERT INTO Tickets (customer_id, order_id, subject, priority, status)\nVALUES (8, 204, 'Damaged product received', 'High', 'Pending');"
     },
     {
-      title: "2. SLA Deadline Stamping",
-      desc: "The system reads ticket priority (e.g. High) and stamps the target resolution deadline (6 hours in future) into the database.",
+      title: "2. Stamping the SLA Deadline",
+      desc: "The system checks the ticket priority (e.g. High) and stamps the target resolution deadline (6 hours in future) into the database to track compliance.",
       db: "UPDATE Tickets \nSET sla_deadline = DATE_ADD(NOW(), INTERVAL 6 HOUR), \n    status = 'In Progress', \n    assigned_to = 2 \nWHERE ticket_id = 412;"
     },
     {
-      title: "3. Systems Integration Audit",
-      desc: "Support Reps trace backend shipments, querying stock histories and tracking numbers to resolve complaints.",
+      title: "3. Systems Integration Trace",
+      desc: "The support representative checks the delivery shipment record and WMS transaction logs to see what happened on the loading dock.",
       db: "SELECT * \nFROM Sales_Orders \nJOIN Shipments ON Sales_Orders.order_id = Shipments.reference_id \nWHERE order_id = 204;"
     },
     {
-      title: "4. Resolve Ticket & Close SLA",
-      desc: "The agent authorizes a replacement or refund, updating Ticket status to 'Resolved' and logging the close timestamp.",
+      title: "4. Resolving the Incident",
+      desc: "The representative dispatches a replacement product, updates the Ticket status to 'Resolved', and closes the SLA countdown timer.",
       db: "UPDATE Tickets \nSET status = 'Resolved', closed_at = NOW() \nWHERE ticket_id = 412;"
     }
   ]

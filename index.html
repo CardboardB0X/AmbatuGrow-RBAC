@@ -234,26 +234,35 @@
                 <div class="doc-section filterable-section" data-keywords="erp definition database integration master data silos system boundaries">
                   <h4>1. What is an Enterprise Resource Planning (ERP) System?</h4>
                   <p>
-                    An ERP is a centralized software system designed to coordinate and manage all the core operational departments of a business—ranging from purchasing, inventory management, warehousing, e-commerce, customer relations, human resources, to finance. 
+                    Think of an ERP as the <strong>"central brain"</strong> of a company. In a standard business, different departments (like warehousing, purchasing, and customer support) often keep their own separate notes. This creates "data silos" where one team doesn't know what the other is doing.
                   </p>
                   <p>
-                    By feeding data into a single master database, an ERP eliminates "data silos" (where one department is unaware of the logs in another). For example, as soon as a customer completes checkout in E-Commerce:
+                    An ERP eliminates this by feeding all data into <strong>one shared database</strong>. When a transaction happens, everyone sees the update instantly:
                   </p>
                   <ul>
-                    <li><i class="fa-solid fa-angle-right"></i> The Inventory module immediately decrements stock and updates the online channel.</li>
-                    <li><i class="fa-solid fa-angle-right"></i> The Logistics module schedules shipping and assigns carrier details.</li>
+                    <li><i class="fa-solid fa-angle-right"></i> <strong>Real-Time Sync</strong>: The moment a customer purchases an item on the webstore, the inventory counts drop automatically, and logistics immediately schedules shipment. No manual phone calls or emails required.</li>
                   </ul>
                 </div>
                 
                 <div class="doc-section filterable-section" data-keywords="security boundaries supply chain warehouse purchasing approvals authorization role segregation inventory WMS">
-                  <h4>2. Key ERP System Boundaries</h4>
+                  <h4>2. Why System Boundaries Matter</h4>
                   <p>
-                    ERP systems partition permissions and operations into strict boundaries to prevent critical security errors:
+                    To prevent fraud, theft, and critical operational mistakes, the ERP system establishes strict <strong>boundaries</strong> between different jobs (separation of duties):
                   </p>
                   <ul>
-                    <li><i class="fa-solid fa-angle-right"></i> <strong>Inventory vs. Procurement</strong>: While operators log physical counts and receive deliveries, only specialists can approve purchase orders. This ensures segregation of duties.</li>
-                    <li><i class="fa-solid fa-angle-right"></i> <strong>Purchasing vs. Approvals</strong>: Employees request goods via a Requisition, but a separate manager role must approve it before a Purchase Order is dispatched to a supplier. This dual-authorization prevents unauthorized expenditures.</li>
+                    <li><i class="fa-solid fa-angle-right"></i> <strong>Inventory vs. Purchasing</strong>: The warehouse operators who handle physical boxes can log stock levels, but they are blocked from approving purchase budgets. Only Procurement Specialists can sign off on spending.</li>
+                    <li><i class="fa-solid fa-angle-right"></i> <strong>Dual-Authorization Gate</strong>: A general employee can create a "shopping cart" request (Purchase Requisition), but it is locked from being sent to suppliers until a Department Manager clicks "Approve."</li>
                   </ul>
+                </div>
+
+                <div class="doc-section filterable-section" data-keywords="rbac explanation roles permissions security clearance keys">
+                  <h4>3. What is Role-Based Access Control (RBAC)?</h4>
+                  <p>
+                    RBAC is a security system that works like **job-based digital keycards**. Instead of assigning individual keys to every employee, keys are linked directly to job roles (like *WMS Operator* or *Customer Support Rep*).
+                  </p>
+                  <p>
+                    When a user logs in, the system reads their assigned role ID and grants them only the specific clearances required to perform their daily duties, blocking all other modules.
+                  </p>
                 </div>
               </div>
             </div>
@@ -262,28 +271,28 @@
             <div id="doc-processes" class="doc-panel search-filterable">
               <div class="glass-card doc-article">
                 <div class="doc-section filterable-section" data-keywords="procurement po purchase order requisition manager approval dock stock-in goods receipt">
-                  <h4>Procurement & Supplier Inbound Lifecycle</h4>
+                  <h4>Procurement & Supplier Inbound Lifecycle (How We Stock Up)</h4>
                   <p>
-                    The procurement pipeline coordinates material acquisitions:
+                    This flow handles ordering and receiving supplies from external vendors:
                   </p>
                   <ul>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>PR Initiation</strong>: The department submits a Purchase Requisition.</li>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>Approval Gate</strong>: The Department Manager verifies budgets and signs off.</li>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>PO Dispatched</strong>: A formal Purchase Order (PO) detailing products and unit costs is generated and dispatched to the supplier.</li>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>Dock Stock-in</strong>: Upon delivery, Warehouse Operators verify the SKUs, log quantities in the target zone, and write a 'Stock-in' log.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Step 1: Requesting (Requisition)</strong> - An employee submits a list of needed supplies. The request starts as 'Pending' status.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Step 2: Sign-Off (Approval)</strong> - The department manager checks budgets and approves the request, moving it to 'Approved' status.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Step 3: Contract (Purchase Order)</strong> - A specialist selects the preferred supplier and dispatches a formal PO contract detailing SKU pricing.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Step 4: Unloading (Goods Receipt)</strong> - The vendor delivers boxes to the dock. Warehouse operators verify counts, log a 'Stock-In' transaction, and WMS increments inventory balances.</li>
                   </ul>
                 </div>
                 
                 <div class="doc-section filterable-section" data-keywords="ecommerce order sync stock check warehouse operator fulfillment delivery completion">
-                  <h4>E-Commerce Order Sync & Outbound Fulfillment Lifecycle</h4>
+                  <h4>E-Commerce Order Sync & Outbound Fulfillment (How We Ship to Customers)</h4>
                   <p>
-                    The digital fulfillment loop ensures rapid dispatch and delivery integrity:
+                    This flow covers processing customer orders and shipping them out:
                   </p>
                   <ul>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>Order Sync</strong>: Customer completes checkout on the webstore, instantly creating a Sales Order inside the ERP.</li>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>Stock Check</strong>: The system queries the inventory levels. If stock is available, it routes the order to the warehouse.</li>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>WMS Stock-out</strong>: Operators retrieve the items, package them, decrement inventory locations, and log a 'Stock-out' transaction.</li>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>Outbound Dispatch</strong>: The logistics carrier delivers the items and flags the Shipment status to 'Delivered' to complete the operational cycle.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Step 1: Sync Checkout</strong> - Customer completes checkout on the online store. The integration instantly imports customer details and creates a Sales Order in the database.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Step 2: Stock Check</strong> - The database automatically queries WMS inventory locations to confirm items are available.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Step 3: Picking & Packing (Stock-Out)</strong> - Warehouse operators retrieve the products from assigned storage bins, package them, and write a 'Stock-Out' transaction log.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Step 4: Dispatch (Logistics)</strong> - The carrier picks up the shipment, updates transit logs, and marks the status as 'Delivered' upon customer delivery receipt.</li>
                   </ul>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 # 🔄 Deep-Dive Functional Sub-Process Flowcharts
 
-This document details the step-by-step logic gates, status transitions, and data writes occurring within each core operational module of the AmbatuGrow ERP system.
+> [!NOTE]
+> **Plain English Summary**: While the system orchestration blueprint shows the big picture, these diagrams zoom in on the step-by-step actions within specific departments (WMS, Procurement, and Helpdesk). They map out exact check gates (e.g. manager approval checks, stock safety limits) and what database tables are updated as processes progress.
 
 ---
 

@@ -1,6 +1,7 @@
 # 🔐 Role-Based Access Control (RBAC) System Architecture
 
-This document defines the Role-Based Access Control (RBAC) security governance framework for the AmbatuGrow ERP system. It manages user permissions and module access to ensure data security and accountability across our core modules.
+> [!NOTE]
+> **Plain English Summary**: Think of RBAC like a keycard security system in an office. Instead of assigning individual permissions to every employee, access rights are linked directly to job roles (like *WMS Operator* or *Customer Support Rep*). This ensures that employees only get the exact keys needed to perform their daily duties, preventing critical mistakes.
 
 ---
 
