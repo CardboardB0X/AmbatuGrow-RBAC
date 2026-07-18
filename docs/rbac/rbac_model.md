@@ -20,8 +20,6 @@ graph TD
         PE[General Employee]:::roles
         PM[Project Manager]:::roles
         HRM[HR Manager]:::roles
-        FM[Finance Manager]:::roles
-        FA[Accountant]:::roles
         SR[Sales Rep]:::roles
         CS[Support Rep]:::roles
         WMM[WMS Manager]:::roles
@@ -37,7 +35,6 @@ graph TD
         M_SCM[Supply Chain & Logistics]:::modules
         M_Sales[Sales & CRM]:::modules
         M_Help[Helpdesk & Tickets]:::modules
-        M_Fin[Finance & Accounting]:::modules
         M_ECom[E-Commerce Integration]:::modules
         M_Proj[Project Management]:::modules
         M_HR[Human Resources]:::modules
@@ -54,19 +51,10 @@ graph TD
     PE -->|View Personal Record| M_HR
 
     PM -->|Manage Projects & Budgets| M_Proj
-    PM -->|Read Project Costs| M_Fin
     PM -->|Read Assignee Lists| M_HR
 
     HRM -->|Full HR Control| M_HR
     HRM -->|Read Worklogs| M_Proj
-
-    FM -->|Audit / Approve Ledger| M_Fin
-    FM -->|Execute Finance BI| M_BI
-
-    FA -->|Post Journal Entries / AR / AP| M_Fin
-    FA -->|Read Bills| M_Proc
-    FA -->|Read Sales Billing| M_Sales
-    FA -->|Read Payroll Allocations| M_HR
 
     SR -->|Manage Quotes & Orders| M_Sales
     SR -->|Read Inventory Stock| M_WMS
@@ -85,7 +73,6 @@ graph TD
     PS -->|Submit POs & Manage Vendors| M_Proc
     PS -->|Coordinate Deliveries| M_SCM
     PS -->|Read Stock Thresholds| M_WMS
-    PS -->|Read Vendor Payments| M_Fin
 
     ECA -->|Manage Channel Integration| M_ECom
     ECA -->|Read WMS Inventory| M_WMS
@@ -98,20 +85,18 @@ graph TD
 
 The table below indicates the exact permission level for each role across modules, using fully written-out, clear values.
 
-| Security Role | Core Master Data | Procurement | Inventory & WMS | Supply Chain | Sales & CRM | Helpdesk | Finance | E-Commerce | Project Mgmt | HR | BI Reports |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Super Admin** | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access |
-| **General Employee** | No Access | Read & Write *(PR)* | No Access | No Access | No Access | Read & Write *(Ticket)* | No Access | No Access | Read & Write *(Task)* | Read-Only *(Self)* | No Access |
-| **Project Manager** | No Access | No Access | No Access | No Access | No Access | No Access | Read-Only *(Cost)* | No Access | Full Access | Read-Only *(Staff)* | Read-Only |
-| **HR Manager** | No Access | No Access | No Access | No Access | No Access | No Access | Read-Only *(Payroll)* | No Access | Read-Only | Full Access | Read-Only |
-| **Finance Manager** | Read-Only | Read-Only | No Access | No Access | Read-Only | No Access | Full Access | No Access | Read-Only | Read-Only | Full Access |
-| **Accountant** | No Access | Read-Only *(Bills)* | No Access | No Access | Read-Only *(Sales)* | No Access | Read & Write | No Access | No Access | Read-Only *(Payroll)* | Read-Only |
-| **Sales Rep** | No Access | No Access | Read-Only *(Stock)* | No Access | Read & Write | Read-Only | No Access | Read & Write | No Access | No Access | Read-Only |
-| **Support Rep** | No Access | No Access | No Access | No Access | Read-Only *(Orders)* | Read & Write | No Access | No Access | No Access | No Access | Read-Only |
-| **WMS Manager** | No Access | Read-Only *(PO)* | Full Access | Read & Write | No Access | No Access | No Access | Read-Only | No Access | No Access | Read-Only |
-| **Warehouse Operator** | No Access | No Access | Read & Write | Read & Write | No Access | No Access | No Access | No Access | No Access | No Access | No Access |
-| **Procurement Specialist** | No Access | Read & Write | Read-Only | Read & Write | No Access | No Access | Read-Only *(AP)* | No Access | No Access | No Access | Read-Only |
-| **E-Commerce Admin** | No Access | No Access | Read-Only | No Access | Read-Only | No Access | No Access | Read & Write | No Access | No Access | Read-Only |
+| Security Role | Core Master Data | Procurement | Inventory & WMS | Supply Chain | Sales & CRM | Helpdesk | E-Commerce | Project Mgmt | HR | BI Reports |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Super Admin** | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access | Full Access |
+| **General Employee** | No Access | Read & Write *(PR)* | No Access | No Access | No Access | Read & Write *(Ticket)* | No Access | Read & Write *(Task)* | Read-Only *(Self)* | No Access |
+| **Project Manager** | No Access | No Access | No Access | No Access | No Access | No Access | No Access | Full Access | Read-Only *(Staff)* | Read-Only |
+| **HR Manager** | No Access | No Access | No Access | No Access | No Access | No Access | No Access | Read-Only | Full Access | Read-Only |
+| **Sales Rep** | No Access | No Access | Read-Only *(Stock)* | No Access | Read & Write | Read-Only | Read & Write | No Access | No Access | Read-Only |
+| **Support Rep** | No Access | No Access | No Access | No Access | Read-Only *(Orders)* | Read & Write | No Access | No Access | No Access | Read-Only |
+| **WMS Manager** | No Access | Read-Only *(PO)* | Full Access | Read & Write | No Access | No Access | Read-Only | No Access | No Access | Read-Only |
+| **Warehouse Operator** | No Access | No Access | Read & Write | Read & Write | No Access | No Access | No Access | No Access | No Access | No Access |
+| **Procurement Specialist** | No Access | Read & Write | Read-Only | Read & Write | No Access | No Access | No Access | No Access | No Access | Read-Only |
+| **E-Commerce Admin** | No Access | No Access | Read-Only | No Access | Read-Only | No Access | Read & Write | No Access | No Access | Read-Only |
 
 ---
 
@@ -130,7 +115,5 @@ The table below indicates the exact permission level for each role across module
 * **Sales Representative**: Deals directly with customers. Instantiates customer records, manages quotations and sales order lifecycles, and maintains the e-commerce product sync parameters.
 * **Customer Support Agent**: Handles client tickets. Assigns, updates, escalates support incidents, and checks sales order references to ensure compliance with service agreement windows (SLAs).
 
-### 4. Finance & Human Resources
-* **Finance Manager**: Oversees financial performance, verifies balance sheets, audits the General Ledger, tracks budgets, and acts as the gatekeeper for BI compliance reports.
-* **Accountant**: Performs daily financial entries. Records accounts payable invoices from vendors, reconciles accounts receivable bills, processes payroll data, and writes transactions to the General Ledger.
+### 4. Human Resources
 * **HR Manager**: Manages the employee lifecycle. Oversees personal records, hiring pipelines, leaf allocations, biometric attendance data, and processes payroll inputs.

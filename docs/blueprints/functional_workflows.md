@@ -6,7 +6,7 @@ This document details the step-by-step logic gates, status transitions, and data
 
 ## 📥 A. Procurement & Purchase Order Lifecycle Process
 
-This process governs the acquisition of vendor inventory, detailing everything from the creation of internal requisitions to payment validation.
+This process governs the acquisition of vendor inventory, detailing everything from the creation of internal requisitions to physical stock receipt.
 
 ```mermaid
 flowchart TD
@@ -32,19 +32,13 @@ flowchart TD
     Step8 --> Step9[Materials Arrive at Dock: Create Inbound Shipment]:::proc
     
     Step9 --> Step10[Record Goods Receipt & Execute Stock-in Log]:::proc
-    Step10 --> Step11[AP Specialist Receives Supplier_Invoices]:::proc
-    
-    Step11 --> Step12{3-Way Match Validation: PO vs. Goods Receipt vs. Invoice}:::decision
-    Step12 -->|Mismatch Found| Step12Err[Flag Transaction & Hold Payment]:::proc
-    Step12 -->|Match Successful| Step13[Approve Invoice Payment & Adjust General Ledger]:::proc
-    Step13 --> Step14([End Process]):::proc
+    Step10 --> Step14([End Process: Inbound Items Transferred to WMS]):::proc
 ```
 
 ### Key Stages
 1. **Requisition Stage**: Requisitions originate from departments. An approval gate prevents un-budgeted purchasing.
 2. **PO Dispatch**: Purchases are routed dynamically based on Preferred Supplier configurations or manually processed.
-3. **Goods Inbound**: Warehouse receipt of products logs inventory before finance releases payments.
-4. **3-Way Match Validation**: Prevents payment of faulty orders by validating the invoice amounts against actual quantities received and ordered.
+3. **Goods Inbound**: Warehouse receipt of products logs inventory and closes out the active Purchase Order.
 
 ---
 
@@ -117,9 +111,7 @@ flowchart TD
     
     S9 --> S10[Dispatch Notification to Logistics Layer for Outbound Shipment]:::sales
     S10 --> S11[Warehouse Executes Stock-out & Lowers Available Balances]:::sales
-    S11 --> S12[Accounts Receivable Compiles Customer Invoice]:::sales
-    S12 --> S13[Record Customer Payment and Update General Ledger]:::sales
-    S13 --> S14[Order Status Set to 'Delivered']:::sales
+    S11 --> S14[Order Status Set to 'Delivered']:::sales
     S14 --> S15([End Process]):::sales
 ```
 
@@ -127,7 +119,7 @@ flowchart TD
 1. **Quotation Stage**: Sales Representatives query Customer Master records and apply regional price books or discount matrices.
 2. **Commit Gate**: Confirmed quotes update to Sales Orders, locking in transaction details (currencies, payment terms).
 3. **Availability Hold**: If stock is unavailable, orders are put on hold and backordered via the Procurement system.
-4. **Fulfillment & Billing**: Handover to warehouse for dispatch, triggering accounts receivable processes.
+4. **Fulfillment & Delivery**: Handover to warehouse for dispatch, final delivery receipt, and order completion.
 
 ---
 

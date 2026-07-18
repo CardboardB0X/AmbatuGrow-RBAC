@@ -13,7 +13,7 @@ This repository serves as the single source of truth for the system's operationa
 We have built a premium, responsive **Interactive HTML Dashboard** directly inside this repository. This single-page application (SPA) allows you to:
 * 🔄 **Explore Flowcharts with Pan & Zoom**: Renders the E2E Orchestration map and sub-process lifecycles dynamically using Mermaid.js. Supports click-and-drag panning, scroll-wheel zooming, and button scaling overlay.
 * 📖 **Searchable Documentation Center**: Contains structured guides explaining ERP concepts, process logic gates, data dictionaries, and an integrated **Helpdesk & FAQs** search portal.
-* 🔐 **Simulate RBAC Clearance**: Select a role (e.g., Accountant, WMS Operator) to see their operational duties and explicit permission grid (e.g. *Full Access*, *Read & Write*, *Read-Only*, *No Access*) across all 11 ERP modules.
+* 🔐 **Simulate RBAC Clearance**: Select a role (e.g., WMS Manager, Sales Rep) to see their operational duties and explicit permission grid (e.g. *Full Access*, *Read & Write*, *Read-Only*, *No Access*) across all ERP modules.
 
 ### How to Run Locally:
 1. Open the [index.html](index.html) file directly in any modern web browser.
@@ -42,18 +42,17 @@ AmbatuGrow-RBAC/
 
 ## ⚙️ Core ERP Modules
 
-AmbatuGrow is composed of **10 functional modules** designed to run cohesively across business boundaries:
+AmbatuGrow is composed of **9 functional modules** designed to run cohesively across business boundaries:
 
 1. **Inventory & Warehouse Management (WMS)**: Organizes SKUs across warehouse locations, tracking stock-in, stock-out, and transfers with real-time safety thresholds.
-2. **Procurement & Purchasing**: Governs internal purchase requisitions, supplier catalogs, PO tracking, and 3-way invoice matching.
+2. **Procurement & Purchasing**: Governs internal purchase requisitions, supplier catalogs, PO tracking, and inbound receipts.
 3. **Sales & Customer Support Management**: Handles customer profiles, quotations, sales orders, payment terms, and invoicing.
 4. **Supply Chain Management (SCM)**: Manages logistics, demand planning, route optimization, and shipment tracing (inbound/outbound).
-5. **Finance & Accounting**: Centralizes accounts payable, accounts receivable, and the general ledger.
-6. **Customer Service & Helpdesk**: Converts customer inquiries into support tickets, tracking priority levels and enforcing SLA windows.
-7. **E-Commerce Integration**: Synchronizes online storefront catalog, stock quantities, and customer orders directly with the core ERP.
-8. **Project Management**: Enables project scope planning, scheduling, resource allocation, and budget tracking.
-9. **Human Resources (HR)**: Maintains employee databases, payroll processing, recruitment/onboarding, and leave management.
-10. **Business Intelligence & Reporting**: Generates standard and custom compliance reports with role-based access filters.
+5. **Customer Service & Helpdesk**: Converts customer inquiries into support tickets, tracking priority levels and enforcing SLA windows.
+6. **E-Commerce Integration**: Synchronizes online storefront catalog, stock quantities, and customer orders directly with the core ERP.
+7. **Project Management**: Enables project scope planning, scheduling, resource allocation, and budget tracking.
+8. **Human Resources (HR)**: Maintains employee databases, payroll processing, recruitment/onboarding, and leave management.
+9. **Business Intelligence & Reporting**: Generates standard and custom compliance reports with role-based access filters.
 
 ---
 

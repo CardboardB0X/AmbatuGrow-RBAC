@@ -7,7 +7,6 @@ const flowcharts = {
     classDef proc fill:#2b6cb0,stroke:#3182ce,stroke-width:2px,color:#fff;
     classDef inv fill:#2f855a,stroke:#38a169,stroke-width:2px,color:#fff;
     classDef sales fill:#c05621,stroke:#dd6b20,stroke-width:2px,color:#fff;
-    classDef fin fill:#9b2c2c,stroke:#e53e3e,stroke-width:2px,color:#fff;
     classDef help fill:#6b46c1,stroke:#805ad5,stroke-width:2px,color:#fff;
 
     subgraph Core_Master ["1. Core & Master Data"]
@@ -35,24 +34,13 @@ const flowcharts = {
         TICK[Tickets System]:::help
     end
 
-    subgraph Finance_Acct ["6. Finance & Accounting"]
-        GL[General Ledger Entries]:::fin
-        AP["Accounts Payable / Supplier Invoices"]:::fin
-        AR["Accounts Receivable / Invoicing"]:::fin
-    end
-
     INV -->|Below min_quantity_threshold| PR
     PO -->|Triggers Inbound Logistics| SHIP
     SHIP -->|Executes Delivery Receipt| ST
     ST -->|Updates Quantities| INV
-    PO -->|Sent for Validation| AP
-    AP -->|Executes 3-Way Match| ST
-    AP -->|Adjusts Balances| GL
 
     SO -->|Checks Stock Availability| INV
     SO -->|Triggers Outbound Logistics| SHIP
-    BIL -->|Generates Customer Debts| AR
-    AR -->|Adjusts Balances| GL
     SO -->|Post-Sale Issue| TICK`,
 
   procurement: `flowchart TD
@@ -77,12 +65,7 @@ const flowcharts = {
     Step8 --> Step9[Materials Arrive at Dock: Create Inbound Shipment]:::proc
     
     Step9 --> Step10[Record Goods Receipt & Execute Stock-in Log]:::proc
-    Step10 --> Step11[AP Specialist Receives Supplier_Invoices]:::proc
-    
-    Step11 --> Step12{3-Way Match Validation: PO vs. Goods Receipt vs. Invoice}:::decision
-    Step12 -->|Mismatch Found| Step12Err[Flag Transaction & Hold Payment]:::proc
-    Step12 -->|Match Successful| Step13[Approve Invoice Payment & Adjust General Ledger]:::proc
-    Step13 --> Step14([End Process]):::proc`,
+    Step10 --> Step14([End Process: Inbound Items Logged]):::proc`,
 
   inventory: `flowchart TD
     classDef inv fill:#2f855a,stroke:#38a169,stroke-width:2px,color:#fff;
@@ -132,9 +115,7 @@ const flowcharts = {
     
     S9 --> S10[Dispatch Notification to Logistics Layer for Outbound Shipment]:::sales
     S10 --> S11[Warehouse Executes Stock-out & Lowers Available Balances]:::sales
-    S11 --> S12[Accounts Receivable Compiles Customer Invoice]:::sales
-    S12 --> S13[Record Customer Payment and Update General Ledger]:::sales
-    S13 --> S14[Order Status Set to 'Delivered']:::sales
+    S11 --> S14[Order Status Set to 'Delivered']:::sales
     S14 --> S15([End Process]):::sales`,
 
   helpdesk: `flowchart TD
@@ -173,65 +154,51 @@ const faqData = [
   },
   {
     id: 2,
-    category: "procurement",
-    question: "What is the 3-Way Match validation process in Accounts Payable?",
-    answer: "The 3-way match is a validation gate run by the Accounts Payable (AP) specialist before releasing vendor payments. It compares: (1) The original Purchase Order quantities and rates, (2) The Goods Receipt / Inbound Stock transaction logs from the loading dock, and (3) The Supplier's Invoice. If all three match successfully, the payment is approved and ledger entries are logged.",
-    tags: ["3-way match", "invoice", "verification", "payment", "accounts payable"]
-  },
-  {
-    id: 3,
     category: "inventory",
     question: "What triggers an automated Stock Reorder notification?",
     answer: "Whenever WMS stock levels are updated (via sales fulfillment, supplier delivery, or transfer), the system automatically checks if the remaining quantity is less than or equal to the defined 'min_quantity_threshold' for that SKU. If yes, it fires an alert through the Business Intelligence (BI) module to notify the Procurement team to initialize a PR.",
     tags: ["reorder", "threshold", "minimum quantity", "safety stock", "WMS"]
   },
   {
-    id: 4,
+    id: 3,
     category: "inventory",
     question: "How are stock transactions structured (Stock-In, Stock-Out, Transfer)?",
     answer: "Every physical change in stock is recorded in the Stock_Transactions table. Stock-In occurs during supplier delivery receipts; Stock-Out represents sales order fulfillment; and Transfer records shifts between warehouse zones. Transfers use double-entry logic, deducting quantities from the source node and adding them to the destination node simultaneously.",
     tags: ["stock transactions", "warehouse zones", "transfers", "stock-in", "stock-out"]
   },
   {
-    id: 5,
+    id: 4,
     category: "sales",
     question: "What happens if a Sales Order contains out-of-stock items?",
     answer: "When a Sales Order is placed, the CRM queries the WMS Inventory_Locations table. If stock is available, it progresses to 'Processed'. If unavailable, the Sales Order status changes to 'On Hold' and triggers a Backorder Requisition in the Procurement module to secure the inventory from a supplier.",
     tags: ["stockout", "backorder", "sales order", "CRM", "hold"]
   },
   {
-    id: 6,
+    id: 5,
     category: "helpdesk",
     question: "How do support tickets verify SLA compliance?",
     answer: "Upon ticket creation, the system assigns a priority (Low, Medium, High, Critical) based on incident severity. It then references the SLA Rules Matrix to stamp a target resolution timestamp. A background daemon monitors tickets; if a ticket is unresolved as it approaches this deadline, it triggers an auto-escalation warning to the Operations Manager.",
     tags: ["SLA", "helpdesk", "ticket", "priority", "escalation"]
   },
   {
-    id: 7,
-    category: "finance",
-    question: "How do AR and AP connect back to the General Ledger?",
-    answer: "Accounts Receivable (AR) logs customer debts from billing details, and Accounts Payable (AP) logs supplier obligations. Once payments are registered (customer pays, or vendor is paid), accounting scripts execute balanced double-entry adjustments (debits and credits) in the central General Ledger table.",
-    tags: ["general ledger", "AP", "AR", "finance", "double-entry"]
-  },
-  {
-    id: 8,
+    id: 6,
     category: "ecommerce",
     question: "How does the E-Commerce Integration sync data in real time?",
     answer: "The E-Commerce Integration module handles real-time webhooks. When a customer pays online, the web API transfers items, customer details, and payment tokens into the ERP's Sales_Orders table, while WMS automatically updates stock counts on the online shop to prevent overselling.",
     tags: ["ecommerce", "synchronization", "webhooks", "api", "orders"]
   },
   {
-    id: 9,
+    id: 7,
     category: "projects",
-    question: "How are project budgets integrated with Finance?",
-    answer: "Project Managers assign equipment and labor rates to project tasks. As hours are submitted and materials are consumed, the actual expenses are logged in the project budget. The budget integrates directly with the Finance module to record operational expenditures (OpEx) automatically.",
-    tags: ["project management", "budget", "expenses", "finance"]
+    question: "How are project budgets managed?",
+    answer: "Project Managers assign equipment and labor rates to project tasks. As hours are submitted and materials are consumed, the actual expenses are logged in the project budget to record operational expenditures (OpEx) for performance analysis.",
+    tags: ["project management", "budget", "expenses"]
   },
   {
-    id: 10,
+    id: 8,
     category: "hr",
     question: "Who can see employee payroll records?",
-    answer: "Based on RBAC permissions, employee payroll details are restricted. General Employees can only view their own profile and payslips. HR Managers have read/write access to run payroll computations, and Accountants have read access to execute general ledger pay runs. All other roles have zero access.",
+    answer: "Based on RBAC permissions, employee payroll details are restricted. General Employees can only view their own profile and payslips. HR Managers have full access to run payroll computations. All other roles have zero access.",
     tags: ["payroll", "confidentiality", "HR", "access control", "RBAC"]
   }
 ];
@@ -244,10 +211,10 @@ const rbacRoles = {
     duties: [
       "Manage user accounts and role assignments globally.",
       "Reconfigure module integrations, database schemas, and webhooks.",
-      "Access and export all reports, audit trails, and financial files.",
+      "Access and export all reports and operational audit trails.",
       "Override system locks, blockages, or invalid transactions."
     ],
-    perms: { core: "Full Access", proc: "Full Access", wms: "Full Access", scm: "Full Access", sales: "Full Access", help: "Full Access", fin: "Full Access", ecom: "Full Access", proj: "Full Access", hr: "Full Access", bi: "Full Access" }
+    perms: { core: "Full Access", proc: "Full Access", wms: "Full Access", scm: "Full Access", sales: "Full Access", help: "Full Access", ecom: "Full Access", proj: "Full Access", hr: "Full Access", bi: "Full Access" }
   },
   employee: {
     title: "General Employee",
@@ -258,7 +225,7 @@ const rbacRoles = {
       "Submit helpdesk support tickets for equipment or account issues.",
       "View and execute tasks assigned within project workspaces."
     ],
-    perms: { core: "No Access", proc: "Read & Write (Requisitions)", wms: "No Access", scm: "No Access", sales: "No Access", help: "Read & Write (Tickets)", fin: "No Access", ecom: "No Access", proj: "Read & Write (Tasks)", hr: "Read-Only (Self)", bi: "No Access" }
+    perms: { core: "No Access", proc: "Read & Write (Requisitions)", wms: "No Access", scm: "No Access", sales: "No Access", help: "Read & Write (Tickets)", ecom: "No Access", proj: "Read & Write (Tasks)", hr: "Read-Only (Self)", bi: "No Access" }
   },
   pm: {
     title: "Project Manager",
@@ -269,7 +236,7 @@ const rbacRoles = {
       "Track project expenditures against budget estimates in real-time.",
       "Monitor task completion rates and compile progress dashboards."
     ],
-    perms: { core: "No Access", proc: "No Access", wms: "No Access", scm: "No Access", sales: "No Access", help: "No Access", fin: "Read-Only (Project Costs)", ecom: "No Access", proj: "Full Access", hr: "Read-Only (Staff Assignees)", bi: "Read-Only" }
+    perms: { core: "No Access", proc: "No Access", wms: "No Access", scm: "No Access", sales: "No Access", help: "No Access", ecom: "No Access", proj: "Full Access", hr: "Read-Only (Staff Assignees)", bi: "Read-Only" }
   },
   hrm: {
     title: "HR Specialist / Manager",
@@ -280,29 +247,7 @@ const rbacRoles = {
       "Manage recruitment, coordinate applicant pipelines, and onboarding tasks.",
       "Administer leaves, timesheets, and biometric attendance reports."
     ],
-    perms: { core: "No Access", proc: "No Access", wms: "No Access", scm: "No Access", sales: "No Access", help: "No Access", fin: "Read-Only (Payroll Allocations)", ecom: "No Access", proj: "Read-Only", hr: "Full Access", bi: "Read-Only" }
-  },
-  fm: {
-    title: "Finance Manager",
-    desc: "Oversees company financial health. Audits ledgers, performs financial consolidation, and oversees budgets.",
-    duties: [
-      "Audit and sign off on General Ledger adjustments and financial statements.",
-      "Perform budget vs. actual operational performance reviews.",
-      "Oversee regulatory compliance, tax submissions, and external audits.",
-      "Approve high-value invoices and payments locked by specialists."
-    ],
-    perms: { core: "Read-Only", proc: "Read-Only", wms: "No Access", scm: "No Access", sales: "Read-Only", help: "No Access", fin: "Full Access", ecom: "No Access", proj: "Read-Only", hr: "Read-Only", bi: "Full Access" }
-  },
-  accountant: {
-    title: "Accountant",
-    desc: "Handles daily transactional bookkeeping, invoice validation, accounts payable, accounts receivable, and ledger posts.",
-    duties: [
-      "Log incoming vendor invoices and process Accounts Payable runs.",
-      "Generate customer invoices and apply payments to Accounts Receivable.",
-      "Reconcile bank statements and post credit/debit entries to the General Ledger.",
-      "Review employee payroll computations for accounting integration."
-    ],
-    perms: { core: "No Access", proc: "Read-Only (Supplier Invoices)", wms: "No Access", scm: "No Access", sales: "Read-Only (Sales Billing)", help: "No Access", fin: "Read & Write", ecom: "No Access", proj: "No Access", hr: "Read-Only (Payroll Ledger)", bi: "Read-Only" }
+    perms: { core: "No Access", proc: "No Access", wms: "No Access", scm: "No Access", sales: "No Access", help: "No Access", ecom: "No Access", proj: "Read-Only", hr: "Full Access", bi: "Read-Only" }
   },
   salesrep: {
     title: "Sales Representative",
@@ -313,7 +258,7 @@ const rbacRoles = {
       "Convert quotes into Sales Orders and verify initial stock availability.",
       "Sync order contexts and customer details with E-Commerce modules."
     ],
-    perms: { core: "No Access", proc: "No Access", wms: "Read-Only (Stock Balance)", scm: "No Access", sales: "Read & Write", help: "Read-Only", fin: "No Access", ecom: "Read & Write", proj: "No Access", hr: "No Access", bi: "Read-Only" }
+    perms: { core: "No Access", proc: "No Access", wms: "Read-Only (Stock Balance)", scm: "No Access", sales: "Read & Write", help: "Read-Only", ecom: "Read & Write", proj: "No Access", hr: "No Access", bi: "Read-Only" }
   },
   supportrep: {
     title: "Customer Support Rep",
@@ -324,7 +269,7 @@ const rbacRoles = {
       "Publish self-service troubleshooting articles and FAQ guides.",
       "Escalate unresolved issues violating SLA windows to managers."
     ],
-    perms: { core: "No Access", proc: "No Access", wms: "No Access", scm: "No Access", sales: "Read-Only (Customer Orders)", help: "Read & Write", fin: "No Access", ecom: "No Access", proj: "No Access", hr: "No Access", bi: "Read-Only" }
+    perms: { core: "No Access", proc: "No Access", wms: "No Access", scm: "No Access", sales: "Read-Only (Customer Orders)", help: "Read & Write", ecom: "No Access", proj: "No Access", hr: "No Access", bi: "Read-Only" }
   },
   wmsmgr: {
     title: "WMS Manager",
@@ -335,7 +280,7 @@ const rbacRoles = {
       "Oversee large-scale inter-warehouse transfers and shipments.",
       "Review stock balance metrics and dispatch inventory reports."
     ],
-    perms: { core: "No Access", proc: "Read-Only (Supplier POs)", wms: "Full Access", scm: "Read & Write", sales: "No Access", help: "No Access", fin: "No Access", ecom: "Read-Only", proj: "No Access", hr: "No Access", bi: "Read-Only" }
+    perms: { core: "No Access", proc: "Read-Only (Supplier POs)", wms: "Full Access", scm: "Read & Write", sales: "No Access", help: "No Access", ecom: "Read-Only", proj: "No Access", hr: "No Access", bi: "Read-Only" }
   },
   wmsoperator: {
     title: "Warehouse Operator",
@@ -346,7 +291,7 @@ const rbacRoles = {
       "Fulfill outgoing sales order lists, logging 'Stock-Out' transactions.",
       "Execute physical stock transfers between storage zones."
     ],
-    perms: { core: "No Access", proc: "No Access", wms: "Read & Write", scm: "Read & Write", sales: "No Access", help: "No Access", fin: "No Access", ecom: "No Access", proj: "No Access", hr: "No Access", bi: "No Access" }
+    perms: { core: "No Access", proc: "No Access", wms: "Read & Write", scm: "Read & Write", sales: "No Access", help: "No Access", ecom: "No Access", proj: "No Access", hr: "No Access", bi: "No Access" }
   },
   procspecialist: {
     title: "Procurement Specialist",
@@ -357,7 +302,7 @@ const rbacRoles = {
       "Review vendor delivery performance, ratings, and compliance metrics.",
       "Coordinate with SCM to expedite urgent supply shipments."
     ],
-    perms: { core: "No Access", proc: "Read & Write", wms: "Read-Only", scm: "Read & Write", sales: "No Access", help: "No Access", fin: "Read-Only (Vendor Invoices)", ecom: "No Access", proj: "No Access", hr: "No Access", bi: "Read-Only" }
+    perms: { core: "No Access", proc: "Read & Write", wms: "Read-Only", scm: "Read & Write", sales: "No Access", help: "No Access", ecom: "No Access", proj: "No Access", hr: "No Access", bi: "Read-Only" }
   },
   ecomadmin: {
     title: "E-Commerce Administrator",
@@ -368,7 +313,7 @@ const rbacRoles = {
       "Manage online catalog product detail uploads and price points.",
       "Coordinate web customer profiles and payment gateways."
     ],
-    perms: { core: "No Access", proc: "No Access", wms: "Read-Only", scm: "No Access", sales: "Read-Only", help: "No Access", fin: "No Access", ecom: "Read & Write", proj: "No Access", hr: "No Access", bi: "Read-Only" }
+    perms: { core: "No Access", proc: "No Access", wms: "Read-Only", scm: "No Access", sales: "Read-Only", help: "No Access", ecom: "Read & Write", proj: "No Access", hr: "No Access", bi: "Read-Only" }
   }
 };
 
@@ -502,7 +447,6 @@ async function renderMermaidDiagram(key) {
   
   container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-circle-notch fa-spin"></i> Rendering Vector Graphics...</div>`;
   
-  // Give the browser 50ms to ensure the layout has updated (width/height calculated)
   setTimeout(async () => {
     try {
       if (typeof window.mermaid === 'undefined') {
@@ -725,7 +669,6 @@ function initRBACSimulator() {
     scm: "Supply Chain / Logistics",
     sales: "Sales & CRM",
     help: "Helpdesk / Support",
-    fin: "Finance & Accounting",
     ecom: "E-Commerce Integrations",
     proj: "Project Management",
     hr: "Human Resources",
@@ -788,7 +731,6 @@ function initApp() {
   if (mermaidInitialized) return;
   
   if (typeof window.mermaid === 'undefined') {
-    // Wait for the custom event fired by the ESM script in index.html
     window.addEventListener('mermaid-loaded', () => {
       mermaidInitialized = true;
       runInitialization();
@@ -806,7 +748,6 @@ function runInitialization() {
   initDocsAndSearchEngine();
   initRBACSimulator();
   
-  // Render initial flowchart if active view is flowcharts
   const activeSection = document.querySelector('.view-section.active');
   if (activeSection && activeSection.id === 'flowcharts-view') {
     const activeFlowTab = document.querySelector('.flow-tab.active');

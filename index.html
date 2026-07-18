@@ -109,7 +109,7 @@
             </div>
             <div class="glass-card stat-item roles">
               <span>Security Roles Defined</span>
-              <h4>12 Roles</h4>
+              <h4>10 Roles</h4>
             </div>
             <div class="glass-card stat-item database">
               <span>Database ERD Tables</span>
@@ -135,25 +135,19 @@
               <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
                 <div class="module-card-icon"><i class="fa-solid fa-cart-shopping"></i></div>
                 <h4>Procurement & PO</h4>
-                <p>Manages requisitions, supplier catalogs, purchase orders, and 3-way matching.</p>
+                <p>Manages requisitions, supplier catalogs, purchase orders, and inbound receipts.</p>
               </div>
               
               <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
                 <div class="module-card-icon"><i class="fa-solid fa-users"></i></div>
                 <h4>Sales & CRM</h4>
-                <p>Manages quotations, invoices, and sales order fulfillment cycles.</p>
+                <p>Manages quotations, customer profiles, and sales order fulfillment cycles.</p>
               </div>
               
               <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
                 <div class="module-card-icon"><i class="fa-solid fa-truck-ramp-box"></i></div>
                 <h4>Supply Chain (SCM)</h4>
                 <p>Handles logistics routing, shipment tracking, and delivery timelines.</p>
-              </div>
-              
-              <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
-                <div class="module-card-icon"><i class="fa-solid fa-wallet"></i></div>
-                <h4>Finance & Accounting</h4>
-                <p>Centralizes Accounts Payable, Accounts Receivable, and the General Ledger.</p>
               </div>
               
               <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click(); setTimeout(() => document.querySelector('[data-doc=\'faq\']').click(), 50)">
@@ -165,7 +159,7 @@
               <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
                 <div class="module-card-icon"><i class="fa-solid fa-globe"></i></div>
                 <h4>E-Commerce Sync</h4>
-                <p>Real-time order importing, inventory updates, and payment reconciliation.</p>
+                <p>Real-time order importing, inventory updates, and channel sync.</p>
               </div>
               
               <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
@@ -253,17 +247,16 @@
                   <ul>
                     <li><i class="fa-solid fa-angle-right"></i> The Inventory module immediately decrements stock and updates the online channel.</li>
                     <li><i class="fa-solid fa-angle-right"></i> The CRM generates a sales order and updates their transaction history.</li>
-                    <li><i class="fa-solid fa-angle-right"></i> The Finance module generates accounts receivable entries and updates the General Ledger.</li>
                   </ul>
                 </div>
                 
-                <div class="doc-section filterable-section" data-keywords="security boundaries supply chain finance purchasing approvals authorization role segregation">
+                <div class="doc-section filterable-section" data-keywords="security boundaries supply chain warehouse purchasing approvals authorization role segregation inventory WMS">
                   <h4>2. Key ERP System Boundaries</h4>
                   <p>
                     ERP systems partition permissions and operations into strict boundaries to prevent critical security errors:
                   </p>
                   <ul>
-                    <li><i class="fa-solid fa-angle-right"></i> <strong>Supply Chain vs. Finance</strong>: While operators manage stock transactions, only accounting personnel can modify financial records or approve invoice payouts.</li>
+                    <li><i class="fa-solid fa-angle-right"></i> <strong>Inventory vs. Procurement</strong>: While operators log physical counts and receive deliveries, only specialists can approve purchase orders. This ensures segregation of duties.</li>
                     <li><i class="fa-solid fa-angle-right"></i> <strong>Purchasing vs. Approvals</strong>: Employees request goods via a Requisition, but a separate manager role must approve it before a Purchase Order is dispatched to a supplier. This dual-authorization prevents unauthorized expenditures.</li>
                   </ul>
                 </div>
@@ -273,7 +266,7 @@
             <!-- Docs Panel 2: Process Walks -->
             <div id="doc-processes" class="doc-panel search-filterable">
               <div class="glass-card doc-article">
-                <div class="doc-section filterable-section" data-keywords="procurement po purchase order requisition manager approval dock stock-in 3-way match invoice accounts payable general ledger">
+                <div class="doc-section filterable-section" data-keywords="procurement po purchase order requisition manager approval dock stock-in goods receipt">
                   <h4>Procurement & Supplier Inbound Lifecycle</h4>
                   <p>
                     The procurement pipeline coordinates material acquisitions:
@@ -283,21 +276,20 @@
                     <li><i class="fa-solid fa-circle-check"></i> <strong>Approval Gate</strong>: The Department Manager verifies budgets and signs off.</li>
                     <li><i class="fa-solid fa-circle-check"></i> <strong>PO Dispatched</strong>: A formal Purchase Order (PO) detailing products and unit costs is generated and dispatched to the supplier.</li>
                     <li><i class="fa-solid fa-circle-check"></i> <strong>Dock Stock-in</strong>: Upon delivery, Warehouse Operators verify the SKUs, log quantities in the target zone, and write a 'Stock-in' log.</li>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>3-Way Match Verification</strong>: The Accountant receives the Supplier Invoice and verifies it against the PO and the Dock Receipt. If matching, payment is released and logged in the General Ledger.</li>
                   </ul>
                 </div>
                 
-                <div class="doc-section filterable-section" data-keywords="sales order crm quotation customer profile stock check warehouse operator fulfillment billing invoice accounts receivable general ledger">
+                <div class="doc-section filterable-section" data-keywords="sales order crm quotation customer profile stock check warehouse operator fulfillment delivery completion">
                   <h4>Sales Fulfillment & Customer Outbound Lifecycle</h4>
                   <p>
-                    The customer fulfillment loop ensures rapid dispatch and billing integrity:
+                    The customer fulfillment loop ensures rapid dispatch and delivery integrity:
                   </p>
                   <ul>
                     <li><i class="fa-solid fa-circle-check"></i> <strong>CRM Quote</strong>: Sales Reps query the customer profile, apply discount matrices, and issue a Quotation.</li>
                     <li><i class="fa-solid fa-circle-check"></i> <strong>Order Creation</strong>: Once confirmed, a Sales Order is created with payment terms.</li>
                     <li><i class="fa-solid fa-circle-check"></i> <strong>Stock Check</strong>: The system queries the inventory levels. If stock is available, it routes the order to the warehouse. If out of stock, the order is flagged 'On Hold' and triggers a Procurement request.</li>
                     <li><i class="fa-solid fa-circle-check"></i> <strong>WMS Stock-out</strong>: Operators retrieve the items, package them, decrement inventory locations, and log a 'Stock-out' transaction.</li>
-                    <li><i class="fa-solid fa-circle-check"></i> <strong>Invoicing & Receivable</strong>: The finance team creates a customer invoice. When payment arrives, accounts receivable is reconciled, and the General Ledger is updated.</li>
+                    <li><i class="fa-solid fa-circle-check"></i> <strong>Delivery Receipt</strong>: The logistics carrier delivers the items and flags the Sales Order status to 'Delivered' to complete the operational cycle.</li>
                   </ul>
                 </div>
               </div>
@@ -306,7 +298,7 @@
             <!-- Docs Panel 3: Database Schema Guide -->
             <div id="doc-database" class="doc-panel search-filterable">
               <div class="glass-card doc-article">
-                <div class="doc-section filterable-section" data-keywords="database schema dictionary tables primary key foreign keys roles users permission product suppliers warehouses locations ledger AP AR">
+                <div class="doc-section filterable-section" data-keywords="database schema dictionary tables primary key foreign keys roles users permission product suppliers warehouses locations">
                   <h4>Database Architecture Overview</h4>
                   <p>
                     AmbatuGrow uses a highly normalized relational database layout to guarantee transactional integrity (ACID compliance) and prevent data duplication. Below is the updated data dictionary reflecting the official tables and RBAC entities.
@@ -424,7 +416,6 @@
                 <button class="filter-btn" data-category="inventory">Inventory & WMS</button>
                 <button class="filter-btn" data-category="sales">Sales & CRM</button>
                 <button class="filter-btn" data-category="helpdesk">Helpdesk & SLA</button>
-                <button class="filter-btn" data-category="finance">Finance</button>
                 <button class="filter-btn" data-category="ecommerce">E-Commerce</button>
                 <button class="filter-btn" data-category="projects">Projects</button>
                 <button class="filter-btn" data-category="hr">Human Resources</button>
@@ -448,8 +439,6 @@
               <option value="employee" selected>General Employee</option>
               <option value="pm">Project Manager</option>
               <option value="hrm">HR Specialist / Manager</option>
-              <option value="fm">Finance Manager</option>
-              <option value="accountant">Accountant</option>
               <option value="salesrep">Sales Representative</option>
               <option value="supportrep">Customer Support Rep</option>
               <option value="wmsmgr">WMS Manager</option>

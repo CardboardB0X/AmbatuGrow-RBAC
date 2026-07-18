@@ -6,7 +6,7 @@ This document outlines the database architecture for the AmbatuGrow ERP system. 
 
 ## 🗺️ Entity Relationship Map
 
-The following Mermaid diagram maps the database relationships across modules. It showcases the new RBAC structure (`Permissions` and `Role_Permissions`) alongside the core ERP schema tables.
+The following Mermaid diagram maps the database relationships across modules. It showcases the RBAC structure (`Permissions` and `Role_Permissions`) alongside the core ERP schema tables.
 
 ```mermaid
 erDiagram
@@ -80,13 +80,13 @@ erDiagram
 * **`role_id`** (INT, FK -> `Roles`): Link to security role.
 * **`status`** (ENUM('Active', 'Inactive', 'Suspended')): User status.
 
-#### `Permissions` [NEW RBAC Table]
+#### `Permissions` [RBAC Table]
 * **`permission_id`** (INT, PK): Unique identifier for each permission.
 * **`permission_name`** (VARCHAR(100), UNIQUE): Name of permission (e.g. `CREATE_PURCHASE_ORDER`).
 * **`module_name`** (VARCHAR(50)): Associated ERP module.
 * **`description`** (TEXT): Context of what action this allows.
 
-#### `Role_Permissions` [NEW RBAC Table]
+#### `Role_Permissions` [RBAC Table]
 * **`role_id`** (INT, FK -> `Roles` / Composite PK): Associated role.
 * **`permission_id`** (INT, FK -> `Permissions` / Composite PK): Permitted action.
 
