@@ -380,6 +380,15 @@ let isDragging = false;
 let startX = 0;
 let startY = 0;
 
+// SQL Syntax Highlighter Helper
+function highlightSQL(raw) {
+  if (!raw) return '';
+  return raw
+    .replace(/(-- .*)/g, '<span class="sql-comment">$1</span>')
+    .replace(/\b(SELECT|FROM|JOIN|ON|WHERE|AND|OR|IN|JOIN|USING|INSERT|UPDATE|SET|VALUES)\b/g, '<span class="sql-keyword">$1</span>')
+    .replace(/('[^']*')/g, '<span class="sql-string">$1</span>');
+}
+
 function initPanZoomEngine() {
   const wrapper = document.getElementById('diagram-canvas-wrapper');
   const container = document.getElementById('mermaid-container');
@@ -494,7 +503,7 @@ function initWalkthroughEngine() {
     descEl.textContent = step.desc;
 
     // Output formatted syntax
-    logsEl.innerHTML = `<span class="sql-keyword">-- SQL TRANSACTION LOG:</span>\n${step.db}`;
+    logsEl.innerHTML = `<span class="sql-keyword">-- SQL TRANSACTION LOG:</span>\n${highlightSQL(step.db)}`;
 
     prevBtn.disabled = currentWalkStep === 0;
     nextBtn.disabled = currentWalkStep === total - 1;
@@ -537,14 +546,7 @@ function initSQLPlayground() {
 
   const renderSQL = (val) => {
     const raw = sqlPlaygroundQueries[val] || '';
-    
-    // Simple mock highlighting for displaying queries beautifully
-    const formatted = raw
-      .replace(/(-- .*)/g, '<span class="sql-comment">$1</span>')
-      .replace(/\b(SELECT|FROM|JOIN|ON|WHERE|AND|OR|IN|JOIN|USING|INSERT|UPDATE|SET|VALUES)\b/g, '<span class="sql-keyword">$1</span>')
-      .replace(/('[^']*')/g, '<span class="sql-string">$1</span>');
-      
-    codeBox.innerHTML = formatted;
+    codeBox.innerHTML = highlightSQL(raw);
   };
 
   select.addEventListener('change', (e) => {
