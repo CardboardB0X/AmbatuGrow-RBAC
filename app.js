@@ -41,67 +41,66 @@ const flowcharts = {
     EC -->|Syncs Order details| INV
     EC -->|Triggers Outbound Logistics| SHIP
     EC -->|Post-Sale Issue| TICK`,
-
   procurement: `flowchart TD
-    classDef proc fill:#2b6cb0,stroke:#3182ce,stroke-width:2px,color:#fff;
-    classDef ext fill:#718096,stroke:#4a5568,stroke-width:2px,color:#fff;
-    classDef decision fill:#d69e2e,stroke:#ecc94b,stroke-width:2px,color:#1a202c;
+    classDef proc fill:#1b8a4f,stroke:#146c3c,stroke-width:2px,color:#fff;
+    classDef ext fill:#ebf8f1,stroke:#1b8a4f,stroke-dasharray: 5 5,stroke-width:2px,color:#1f2722;
+    classDef decision fill:#f5ecd8,stroke:#d68910,stroke-width:2px,color:#1f2722;
 
-    WMS_Reorder([WMS Reorder Alert]):::ext --> F1_PR
+    WMS_Reorder([WMS MODULE: Low-Stock Reorder Alert]):::ext --> F1_PR
     
-    subgraph F1 ["1. Requisition & Approval"]
-      F1_PR[Create Requisition PR - Status: Pending]:::proc --> F1_Approval{Manager Review}:::decision
+    subgraph F1 ["1. Request & Manager Approval Gate"]
+      F1_PR[Employee submits supplies requisition PR]:::proc --> F1_Approval{Manager reviews budget?}:::decision
       F1_Approval -->|Rejected| F1_PR
-      F1_Approval -->|Approved| F1_Status[Set status = 'Approved']:::proc
+      F1_Approval -->|Approved| F1_Status[Mark request as Approved]:::proc
     end
 
-    subgraph F2 ["2. Supplier Management"]
-      F2_Supplier[Query Supplier Catalog & Pricing]:::proc
+    subgraph F2 ["2. Supplier Catalog Selection"]
+      F2_Supplier[Match items with preferred supplier & costs]:::proc
     end
 
     F1_Status --> F3_PO
     F2_Supplier --> F3_PO
 
-    subgraph F3 ["3. Purchase Order Management"]
-      F3_PO[Generate Purchase Order PO]:::proc --> F3_Send[Send PO to Supplier - Status: Sent]:::proc
-      F3_Send --> F3_Track{PO Status Check}:::decision
-      F3_Track -->|Delivered| F4_Rec[Goods Arrival]:::proc
-      F3_Track -->|Cancelled| F3_PO
+    subgraph F3 ["3. Purchase Order PO Contract"]
+      F3_PO[Generate formal Purchase Order PO contract]:::proc --> F3_Send[Send PO contract to supplier]:::proc
+      F3_Send --> F3_Track{Did supplier confirm PO?}:::decision
+      F3_Track -->|Yes: Shipped| F4_Rec[Goods arrive at warehouse dock]:::proc
+      F3_Track -->|No: Cancelled| F3_PO
     end
 
-    subgraph F4 ["4. Goods Receipt & Matching"]
-      F4_Rec --> F4_Match{3-Way Match: PO + Delivery Receipt + Invoice}:::decision
-      F4_Match -->|Mismatch| F4_Flag[Flag Issue & Halt Payment]:::proc
-      F4_Match -->|Match Confirmed| F4_Approve[Approve Payment & Close PO]:::proc
+    subgraph F4 ["4. Goods Receipt & 3-Way Matching"]
+      F4_Rec --> F4_Match{Match PO + Delivery Slip + Vendor Invoice?}:::decision
+      F4_Match -->|Mismatch| F4_Flag[Flag invoice issues & halt payment]:::proc
+      F4_Match -->|All match| F4_Approve[Approve payment & close purchasing file]:::proc
     end
 
-    F4_Approve -->|Inbound stock-in| WMS_StockIn([WMS Stock-in Logs]):::ext
-    F3_Send -->|Inbound tracking| SCM_Inbound([SCM Inbound Tracking]):::ext`,
+    F4_Approve -->|Inbound stock-in receipt| WMS_StockIn([WMS MODULE: Add items to warehouse stock]):::ext
+    F3_Send -->|Logistics tracking| SCM_Inbound([SCM MODULE: Track inbound cargo shipping]):::ext`,
 
   inventory: `flowchart TD
-    classDef inv fill:#2f855a,stroke:#38a169,stroke-width:2px,color:#fff;
-    classDef ext fill:#718096,stroke:#4a5568,stroke-width:2px,color:#fff;
-    classDef decision fill:#d69e2e,stroke:#ecc94b,stroke-width:2px,color:#1a202c;
+    classDef inv fill:#2f855a,stroke:#276749,stroke-width:2px,color:#fff;
+    classDef ext fill:#f0fff4,stroke:#2f855a,stroke-dasharray: 5 5,stroke-width:2px,color:#1a202c;
+    classDef decision fill:#f5ecd8,stroke:#d68910,stroke-width:2px,color:#1f2722;
 
-    Ecom_Sync([E-Commerce Checkout]):::ext --> F2_StockOut
-    Proc_Rec([Procurement Goods Receipt]):::ext --> F2_StockIn
+    Ecom_Sync([E-COMMERCE MODULE: Customer Checkout Webhook]):::ext --> F2_StockOut
+    Proc_Rec([PROCUREMENT MODULE: Goods Inbound Receipt]):::ext --> F2_StockIn
 
     subgraph F1_WMS ["1. Inventory Tracking"]
-      F1_Item[Catalog Item Detail SKU, Description]:::inv
+      F1_Item[Identify barcode SKU details & thresholds]:::inv
     end
 
     subgraph F2_WMS ["2. Stock Transactions"]
-      F2_StockIn[Record Deliveries Stock-In]:::inv --> F2_Log[Maintain Transaction Log & History]:::inv
-      F2_StockOut[Log Sales Deductions Stock-Out]:::inv --> F2_Log
-      F2_Log --> F2_Expire[Verify Expiration Tracking]:::inv
+      F2_StockIn[Record supplier deliveries Stock-In]:::inv --> F2_Log[Maintain movement logs & transactions history]:::inv
+      F2_StockOut[Log sales order pickings Stock-Out]:::inv --> F2_Log
+      F2_Log --> F2_Expire[Verify item batch dates & expiration tags]:::inv
     end
 
     F1_Item --> F3_Loc
 
-    subgraph F3_WMS ["3. Location Tracking"]
-      F3_Loc[Assign Items to Warehouse Zones/Locations]:::inv --> F3_Quant[Track Quantities per Warehouse]:::inv
-      F3_Quant --> F3_Transfer{Is Inter-Warehouse Transfer needed?}:::decision
-      F3_Transfer -->|Yes| F3_Exec[Execute Transfer & Log Movements]:::inv
+    subgraph F3_WMS ["3. Location & Storage Tracking"]
+      F3_Loc[Assign items to specific warehouse zones & bins]:::inv --> F3_Quant[Audit stock counts in each location]:::inv
+      F3_Transfer{Is inter-warehouse transfer needed?}:::decision
+      F3_Transfer -->|Yes| F3_Exec[Move items & log source/destination zones]:::inv
     end
 
     F3_Quant --> F4_Alert
