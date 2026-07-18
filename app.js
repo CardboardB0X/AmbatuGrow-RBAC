@@ -1070,6 +1070,15 @@ function initRBACSimulator() {
   updateRoleDisplay(roleSelect.value);
 }
 
+// Dashboard Module Navigation Redirects
+window.switchToFlowchart = (key) => {
+  const flowNav = document.querySelector('.nav-item[data-view="flowcharts"]');
+  if (flowNav) flowNav.click();
+
+  const subTab = document.querySelector(`.flow-tab[data-diagram="${key}"]`);
+  if (subTab) subTab.click();
+};
+
 // 12. Tab Routing & Views Management (Walkthrough trigger support)
 function initTabs() {
   const navItems = document.querySelectorAll('.nav-item');

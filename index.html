@@ -105,7 +105,7 @@
           <div class="stats-grid">
             <div class="glass-card stat-item active-workflows">
               <span>Active Process Workflows</span>
-              <h4>4 Flows</h4>
+              <h4>5 Flows</h4>
             </div>
             <div class="glass-card stat-item roles">
               <span>Security Roles Defined</span>
@@ -126,31 +126,31 @@
             <h3>Explore ERP Functional Modules</h3>
             <div class="modules-grid">
               
-              <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
+              <div class="module-card" onclick="switchToFlowchart('inventory')">
                 <div class="module-card-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
                 <h4>Inventory & WMS</h4>
                 <p>Tracks SKUs, records warehouse movements, locates bins, and triggers alerts at thresholds.</p>
               </div>
               
-              <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
+              <div class="module-card" onclick="switchToFlowchart('procurement')">
                 <div class="module-card-icon"><i class="fa-solid fa-cart-shopping"></i></div>
                 <h4>Procurement & PO</h4>
                 <p>Manages requisitions, supplier catalogs, purchase orders, and inbound receipts.</p>
               </div>
               
-              <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
+              <div class="module-card" onclick="switchToFlowchart('scm')">
                 <div class="module-card-icon"><i class="fa-solid fa-truck-ramp-box"></i></div>
                 <h4>Supply Chain (SCM)</h4>
                 <p>Handles logistics routing, shipment tracking, and delivery timelines.</p>
               </div>
               
-              <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click(); setTimeout(() => document.querySelector('[data-doc=\'faq\']').click(), 50)">
+              <div class="module-card" onclick="switchToFlowchart('helpdesk')">
                 <div class="module-card-icon"><i class="fa-solid fa-headset"></i></div>
                 <h4>Customer Support</h4>
                 <p>Manages tickets, assigns support agents, and enforces SLA policies.</p>
               </div>
               
-              <div class="module-card" onclick="document.querySelector('[data-view=\'documentation\']').click()">
+              <div class="module-card" onclick="switchToFlowchart('ecommerce')">
                 <div class="module-card-icon"><i class="fa-solid fa-globe"></i></div>
                 <h4>E-Commerce Sync</h4>
                 <p>Real-time order importing, inventory updates, and channel sync.</p>
