@@ -156,23 +156,28 @@
         
         <!-- View 2: Flowcharts & Blueprints -->
         <section id="flowcharts-view" class="view-section">
-          <div class="flow-tabs-bar">
-            <button class="flow-tab active" data-diagram="orchestration">System Orchestration</button>
-            <button class="flow-tab" data-diagram="procurement">Procurement PO</button>
-            <button class="flow-tab" data-diagram="inventory">Inventory & WMS</button>
-            <button class="flow-tab" data-diagram="scm">Supply Chain (SCM)</button>
-            <button class="flow-tab" data-diagram="ecommerce">E-Commerce Sync</button>
-            <button class="flow-tab" data-diagram="helpdesk">Helpdesk SLA</button>
-          </div>
           
           <div class="glass-card diagram-viewer-card" style="position: relative;">
             
-            <!-- Zoom & Pan Controls Overlay -->
-            <div class="diagram-controls">
-              <button id="btn-zoom-in" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
-              <button id="btn-zoom-out" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
-              <button id="btn-zoom-reset" title="Reset View"><i class="fa-solid fa-arrows-rotate"></i></button>
-              <div class="drag-hint"><i class="fa-solid fa-hand"></i> Click & Drag to Pan</div>
+            <!-- Diagram Header Bar: Flow Tabs & Controls -->
+            <div class="diagram-header-bar">
+              <div class="flow-tabs-bar">
+                <button class="flow-tab active" data-diagram="orchestration">System Orchestration</button>
+                <button class="flow-tab" data-diagram="procurement">Procurement PO</button>
+                <button class="flow-tab" data-diagram="inventory">Inventory & WMS</button>
+                <button class="flow-tab" data-diagram="scm">Supply Chain (SCM)</button>
+                <button class="flow-tab" data-diagram="ecommerce">E-Commerce Sync</button>
+                <button class="flow-tab" data-diagram="helpdesk">Helpdesk SLA</button>
+              </div>
+              
+              <!-- Zoom & Pan & Fullscreen Controls Overlay -->
+              <div class="diagram-controls">
+                <button id="btn-zoom-in" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+                <button id="btn-zoom-out" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+                <button id="btn-zoom-reset" title="Reset View"><i class="fa-solid fa-arrows-rotate"></i></button>
+                <button id="btn-fullscreen" title="Fullscreen Mode (F)"><i class="fa-solid fa-expand"></i></button>
+                <div class="drag-hint"><i class="fa-solid fa-hand"></i> Click & Drag to Pan</div>
+              </div>
             </div>
             
             <div id="diagram-canvas-wrapper">

@@ -618,7 +618,78 @@ function initPanZoomEngine() {
     panY = 0;
     applyTransform();
   });
+
+  const btnFS = document.getElementById('btn-fullscreen');
+  if (btnFS) {
+    btnFS.addEventListener('click', toggleFlowchartFullscreen);
+  }
 }
+
+function toggleFlowchartFullscreen() {
+  const card = document.querySelector('.diagram-viewer-card');
+  const btn = document.getElementById('btn-fullscreen');
+  if (!card) return;
+
+  const isFullscreen = card.classList.contains('is-fullscreen') || !!document.fullscreenElement;
+
+  if (!isFullscreen) {
+    card.classList.add('is-fullscreen');
+    if (btn) {
+      btn.innerHTML = '<i class="fa-solid fa-compress"></i>';
+      btn.setAttribute('title', 'Exit Fullscreen Mode (Esc)');
+    }
+    if (card.requestFullscreen) {
+      card.requestFullscreen().catch(() => {});
+    } else if (card.webkitRequestFullscreen) {
+      card.webkitRequestFullscreen();
+    }
+  } else {
+    card.classList.remove('is-fullscreen');
+    if (btn) {
+      btn.innerHTML = '<i class="fa-solid fa-expand"></i>';
+      btn.setAttribute('title', 'Fullscreen Mode (F)');
+    }
+    if (document.fullscreenElement) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    }
+  }
+}
+
+// Global Fullscreen Change & Keybinding Listeners
+document.addEventListener('fullscreenchange', () => {
+  const card = document.querySelector('.diagram-viewer-card');
+  const btn = document.getElementById('btn-fullscreen');
+  if (!card) return;
+
+  if (!document.fullscreenElement && card.classList.contains('is-fullscreen')) {
+    card.classList.remove('is-fullscreen');
+    if (btn) {
+      btn.innerHTML = '<i class="fa-solid fa-expand"></i>';
+      btn.setAttribute('title', 'Fullscreen Mode (F)');
+    }
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  const activeView = document.querySelector('.view-section.active');
+  const isFlowchartsView = activeView && activeView.id === 'flowcharts-view';
+
+  if (e.key === 'Escape') {
+    const card = document.querySelector('.diagram-viewer-card');
+    if (card && card.classList.contains('is-fullscreen')) {
+      toggleFlowchartFullscreen();
+    }
+  } else if ((e.key === 'f' || e.key === 'F') && isFlowchartsView) {
+    if (!['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+      e.preventDefault();
+      toggleFlowchartFullscreen();
+    }
+  }
+});
 
 function resetPanZoomState() {
   scale = 1.2;

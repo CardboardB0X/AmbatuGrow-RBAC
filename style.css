@@ -376,10 +376,14 @@ body {
 
 .flow-tabs-bar {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 6px;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
 }
 
 .flow-tab {
@@ -405,12 +409,57 @@ body {
   font-weight: 600;
 }
 
+.diagram-header-bar {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.diagram-header-bar > * {
+  pointer-events: auto;
+}
+
 .diagram-viewer-card {
   min-height: 520px;
   height: 65vh;
   padding: 0;
   overflow: hidden;
   border-radius: 12px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fullscreen Mode Styling */
+.diagram-viewer-card.is-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  z-index: 999999 !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  background-color: var(--bg-main) !important;
+  box-shadow: none !important;
+}
+
+.diagram-viewer-card.is-fullscreen .diagram-header-bar {
+  top: 20px;
+  left: 24px;
+  right: 24px;
+}
+
+.diagram-viewer-card.is-fullscreen .flow-walkthrough-panel {
+  bottom: 24px;
+  right: 24px;
+  max-width: 420px;
 }
 
 #mermaid-container {
@@ -437,18 +486,16 @@ body {
 
 /* Float Controls Overlay */
 .diagram-controls {
-  position: absolute;
-  top: 16px;
-  left: 16px;
   display: flex;
   align-items: center;
   gap: 6px;
   z-index: 10;
-  background-color: rgba(255, 255, 255, 0.9);
-  padding: 4px;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 4px 8px;
   border-radius: 8px;
   border: 1px solid var(--border-color);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
 }
 
 .diagram-controls button {
@@ -467,8 +514,18 @@ body {
 }
 
 .diagram-controls button:hover {
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: rgba(0, 0, 0, 0.06);
   color: var(--accent-primary);
+}
+
+.diagram-controls button#btn-fullscreen {
+  color: var(--accent-primary);
+  font-weight: bold;
+}
+
+.diagram-controls button#btn-fullscreen:hover {
+  background-color: var(--accent-primary);
+  color: var(--text-inverse);
 }
 
 .drag-hint {
